@@ -25,7 +25,7 @@ export default function About() {
       setCurrentBgIndex((prev) => (prev + 1) % bgImages.length);
     }, 5000);
     return () => clearInterval(interval);
-  }, []);
+  }, [bgImages.length]);
 
   return (
     <>
@@ -73,12 +73,12 @@ export default function About() {
           </p>
 
           <div className='flex flex-col sm:flex-row items-center justify-center gap-3 animate-fade-up-d3'>
-            <Link to='/invest'>
+            <Link to='/login?role=investor'>
               <button className='h-12 px-8 flex items-center gap-2 text-sm font-semibold bg-[#0a0a0a] text-white rounded-[10px] transition-all duration-200 hover:-translate-y-px hover:shadow-[0_8px_24px_rgba(0,0,0,0.16)]'>
                 Start Investing <ArrowRight size={15} />
               </button>
             </Link>
-            <Link to='/farmers'>
+            <Link to='/login?role=farmer'>
               <button className='h-12 px-8 text-sm font-semibold text-black/50 bg-white border-[1.5px] border-black/[0.09] rounded-[10px] transition-all duration-200 hover:border-[#0a0a0a] hover:text-[#0a0a0a] hover:-translate-y-px hover:shadow-[0_4px_12px_rgba(0,0,0,0.07)]'>
                 Register Your Farm
               </button>
@@ -120,19 +120,19 @@ export default function About() {
                   title: "Instant Investment",
                   body: "Enable diaspora and international investors to support rural development. Transparent profit‑sharing via smart contracts builds trust and drives impact.",
                 },
-              ].map(({ icon: Icon, title, body }) => (
+              ].map((item) => (
                 <div
-                  key={title}
+                  key={item.title}
                   className='flex flex-col gap-3 mx-2 p-10 bg-[#F6F1EF] transition-colors duration-300 rounded-lg'
                 >
                   <div className='w-11 h-11 rounded-xl border border-white/[0.08] bg-white/[0.03] flex items-center justify-center text-white/50'>
-                    <Icon size={18} />
+                    {React.createElement(item.icon, { size: 18 })}
                   </div>
                   <h3 className='font-display text-[22px] text-[#000000]'>
-                    {title}
+                    {item.title}
                   </h3>
                   <p className='text-sm text-[#000000]/60 leading-relaxed font-light'>
-                    {body}
+                    {item.body}
                   </p>
                 </div>
               ))}
@@ -176,7 +176,7 @@ export default function About() {
                   </p>
                 </div>
                 <Link
-                  to='/farmers'
+                  to='/login?role=farmer'
                   className='relative z-10 inline-flex items-center gap-2 mt-10 text-sm font-semibold text-white/80 hover:text-white transition-colors duration-200 group/link'
                 >
                   Register your farm
@@ -208,7 +208,7 @@ export default function About() {
                   </p>
                 </div>
                 <Link
-                  to='/invest'
+                  to='/login?role=investor'
                   className='relative z-10 inline-flex items-center gap-2 mt-10 text-sm font-semibold text-white/80 hover:text-white transition-colors duration-200 group/link'
                 >
                   Start investing
