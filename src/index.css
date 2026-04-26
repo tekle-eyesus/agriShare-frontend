@@ -1,11 +1,66 @@
-@import "tailwindcss";
+@import url("https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap");
 
-html,
-body,
-#root {
-  height: 100%;
+@import "tailwindcss";
+@plugin "daisyui";
+
+@plugin "daisyui/theme" {
+  name: "light";
+  default: true;
+
+  --color-base-100: hsl(210 25% 98%);
+  --color-base-200: hsl(204 27% 93%);
+  --color-base-300: hsl(200 24% 88%);
+  --color-base-content: hsl(200 14% 19%);
+
+  --color-primary: hsl(220 15% 39%);
+  --color-primary-content: hsl(240 100% 99%);
+
+  --color-secondary: hsl(213 100% 38%);
+  --color-secondary-content: hsl(240 100% 99%);
+
+  --color-accent: hsl(153 100% 22%);
+  --color-accent-content: hsl(144 100% 95%);
+
+  --color-error: hsl(2 44% 44%);
+  --color-warning: hsl(43 96% 56%);
+  --color-info: hsl(213 100% 38%);
+  --color-success: hsl(153 100% 22%);
+
+  --rounded-box: 0.5rem;
 }
 
-body {
-  @apply bg-gray-50 text-gray-900 antialiased;
+@plugin "daisyui/theme" {
+  name: "dark";
+
+  --color-base-100: hsl(195 12% 5%);
+  --color-base-200: hsl(200 14% 9%);
+  --color-base-300: hsl(200 14% 16%);
+  --color-base-content: hsl(204 27% 93%);
+
+  --color-primary: hsl(220 39% 86%);
+  --color-primary-content: hsl(200 14% 4%);
+
+  --color-secondary: hsl(217 100% 83%);
+  --color-secondary-content: hsl(200 14% 4%);
+
+  --color-accent: hsl(152 89% 69%);
+  --color-accent-content: hsl(153 100% 14%);
+
+  --color-error: hsl(3 96% 75%);
+  --color-warning: hsl(43 96% 56%);
+  --color-info: hsl(213 100% 83%);
+  --color-success: hsl(152 89% 69%);
+
+  --rounded-box: 0.5rem;
+}
+
+@layer base {
+  html {
+    font-family: Inter, system-ui, sans-serif;
+  }
+
+  body {
+    @apply bg-base-100 text-base-content;
+    font-feature-settings: "cv11", "ss01", "ss03";
+  }
 }
