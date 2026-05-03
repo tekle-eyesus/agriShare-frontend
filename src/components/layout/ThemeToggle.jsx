@@ -1,6 +1,6 @@
 import { motion, AnimatePresence } from "framer-motion";
 import { Moon, Sun } from "lucide-react";
-import { useTheme } from "../../context/ThemeProvider";
+import { useTheme } from "../../store/useTheme";
 
 export function ThemeToggle() {
   const { theme, toggle } = useTheme();

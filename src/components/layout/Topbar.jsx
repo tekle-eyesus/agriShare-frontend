@@ -1,7 +1,6 @@
 import { Bell, Calendar, Search, UserCircle2 } from "lucide-react";
 import { ThemeToggle } from "./ThemeToggle";
 import { Burger } from "./Burger";
-import { ThemeProvider } from "../../context/ThemeProvider";
 
 export function Topbar({ onMenuClick, menuOpen }) {
   return (
@@ -30,9 +29,7 @@ export function Topbar({ onMenuClick, menuOpen }) {
             <UserCircle2 className="w-5 h-5" />
           </button>
           <div className="hidden sm:block mx-1 bg-outline-variant/30 w-px h-6" />
-          <ThemeProvider>
-            <ThemeToggle />
-          </ThemeProvider>
+          <ThemeToggle />
           {/* <span className="hidden md:inline ml-2 text-on-surface-variant label-md">AgriShare Ops</span> */}
         </div>
       </div>

@@ -5,7 +5,7 @@ import App from "./App";
 import "./index.css";
 import { ErrorBoundary } from "react-error-boundary";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import GlobalErrorPage from "./pages/GlobalError";
+import GlobalErrorPage from "./pages/global/GlobalError";
 
 const queryClient = new QueryClient({
   defaultOptions: {

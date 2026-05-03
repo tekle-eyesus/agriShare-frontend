@@ -1,66 +1,138 @@
-@import url("https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Poppins:wght@400;500;600;700;800&display=swap");
 
 @import "tailwindcss";
 @plugin "daisyui";
 
+@theme {
+  --font-sans: "Inter", sans-serif;
+  --font-display: "Poppins", sans-serif;
+
+  --radius-box: 0.75rem;
+  --radius-field: 0.75rem;
+  --radius-selector: 0.75rem;
+
+  --color-primary: #2e7d32;
+  --color-primary-content: #ffffff;
+
+  --color-secondary: #f1f5f9;
+  --color-secondary-content: #0f172a;
+
+  --color-accent: #6b21a8;
+  --color-accent-content: #ffffff;
+
+  --color-neutral: #1e293b;
+  --color-neutral-content: #ffffff;
+
+  --color-base-100: #ffffff;
+  --color-base-200: #f8fafc;
+  --color-base-300: #e2e8f0;
+  --color-base-content: #0f172a;
+
+  --color-info: #2196f3;
+  --color-success: #4caf50;
+  --color-warning: #ff9800;
+  --color-error: #ef4444;
+
+  --shadow-card:
+    0 1px 3px rgb(226 232 240 / 0.4), 0 1px 2px rgb(226 232 240 / 0.2);
+
+  --shadow-elevated: 0 10px 30px -10px rgb(46 125 50 / 0.15);
+
+  --shadow-glow: 0 0 40px rgb(76 175 80 / 0.25);
+
+  --gradient-primary: linear-gradient(135deg, #2e7d32, #4caf50);
+  --gradient-accent: linear-gradient(135deg, #6b21a8, #9333ea);
+  --gradient-soft: linear-gradient(180deg, #ffffff, #f8fafc);
+}
+
 @plugin "daisyui/theme" {
   name: "light";
   default: true;
+  prefersdark: false;
+  color-scheme: light;
 
-  --color-base-100: hsl(210 25% 98%);
-  --color-base-200: hsl(204 27% 93%);
-  --color-base-300: hsl(200 24% 88%);
-  --color-base-content: hsl(200 14% 19%);
+  --color-primary: #2e7d32;
+  --color-primary-content: #ffffff;
 
-  --color-primary: hsl(220 15% 39%);
-  --color-primary-content: hsl(240 100% 99%);
+  --color-secondary: #f1f5f9;
+  --color-secondary-content: #0f172a;
 
-  --color-secondary: hsl(213 100% 38%);
-  --color-secondary-content: hsl(240 100% 99%);
+  --color-accent: #6b21a8;
+  --color-accent-content: #ffffff;
 
-  --color-accent: hsl(153 100% 22%);
-  --color-accent-content: hsl(144 100% 95%);
+  --color-neutral: #1e293b;
+  --color-neutral-content: #ffffff;
 
-  --color-error: hsl(2 44% 44%);
-  --color-warning: hsl(43 96% 56%);
-  --color-info: hsl(213 100% 38%);
-  --color-success: hsl(153 100% 22%);
+  --color-base-100: #ffffff;
+  --color-base-200: #f8fafc;
+  --color-base-300: #e2e8f0;
+  --color-base-content: #0f172a;
 
-  --rounded-box: 0.5rem;
-}
+  --color-info: #2196f3;
+  --color-success: #4caf50;
+  --color-warning: #ff9800;
+  --color-error: #ef4444;
 
-@plugin "daisyui/theme" {
-  name: "dark";
-
-  --color-base-100: hsl(195 12% 5%);
-  --color-base-200: hsl(200 14% 9%);
-  --color-base-300: hsl(200 14% 16%);
-  --color-base-content: hsl(204 27% 93%);
-
-  --color-primary: hsl(220 39% 86%);
-  --color-primary-content: hsl(200 14% 4%);
-
-  --color-secondary: hsl(217 100% 83%);
-  --color-secondary-content: hsl(200 14% 4%);
-
-  --color-accent: hsl(152 89% 69%);
-  --color-accent-content: hsl(153 100% 14%);
-
-  --color-error: hsl(3 96% 75%);
-  --color-warning: hsl(43 96% 56%);
-  --color-info: hsl(213 100% 83%);
-  --color-success: hsl(152 89% 69%);
-
-  --rounded-box: 0.5rem;
+  --radius-box: 0.75rem;
+  --radius-field: 0.75rem;
+  --radius-selector: 0.75rem;
 }
 
 @layer base {
-  html {
-    font-family: Inter, system-ui, sans-serif;
+  * {
+    @apply border-base-300;
+  }
+
+  html,
+  body,
+  #root {
+    height: 100%;
   }
 
   body {
-    @apply bg-base-100 text-base-content;
-    font-feature-settings: "cv11", "ss01", "ss03";
+    @apply bg-base-100 font-sans text-base-content antialiased;
+    font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+  }
+
+  h1,
+  h2,
+  h3,
+  h4 {
+    @apply font-display tracking-tight;
+  }
+}
+
+@layer utilities {
+  .gradient-primary {
+    background: var(--gradient-primary);
+  }
+
+  .gradient-accent {
+    background: var(--gradient-accent);
+  }
+
+  .gradient-soft {
+    background: var(--gradient-soft);
+  }
+
+  .shadow-card {
+    box-shadow: var(--shadow-card);
+  }
+
+  .shadow-elevated {
+    box-shadow: var(--shadow-elevated);
+  }
+
+  .shadow-glow {
+    box-shadow: var(--shadow-glow);
+  }
+
+  .scrollbar-thin::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar-thumb {
+    @apply bg-base-300 rounded-full;
   }
 }
