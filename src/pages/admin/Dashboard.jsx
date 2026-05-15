@@ -1,4 +1,7 @@
 import { motion } from "framer-motion";
+import { useSuspenseQuery } from "@tanstack/react-query";
+import { useAPI } from "../../hook/useApi";
+
 import {
   Users,
   Layers,
@@ -9,34 +12,36 @@ import {
   Download,
   CheckCircle2,
   AlertCircle,
+  FileText,
+  Bell,
 } from "lucide-react";
 import { PageHeader } from "../../components/admin/shared";
-import { KPIS } from "../../mock-data/admin/data";
 import { formatETB, formatNumber } from "../../utils/format";
 import KPICard from "../../components/admin/dashboard/KPICard";
 import QueueAlertCard from "../../components/admin/dashboard/QueueAlertCard";
-import TopListingsCard from "../../components/admin/dashboard/TopListingsCard";
-import RevenueChart from "../../components/admin/dashboard/RevenueChart";
-import SystemStatusCard from "../../components/admin/dashboard/SystemStatusCard";
-import ActivityFeed from "../../components/admin/dashboard/ActivityFeed";
+
 import { stagger } from "../../utils/motionVariants";
+import UsersSummary from "../../components/admin/dashboard/UsersSummary";
+import ListingsSummary from "../../components/admin/dashboard/ListingsSummary";
+import InvestmentSummary from "../../components/admin/dashboard/InvestmentSummary";
 
 export default function Dashboard() {
+  const { admin } = useAPI();
+  const {
+    data: { data },
+  } = useSuspenseQuery({
+    queryKey: ["admin-dashboard"],
+    queryFn: () => admin.getDashboardData(),
+  });
+
+  const totalPendingVerifications =
+    data?.queues.pendingFarmerVerifications + data.queues.pendingAssets;
+
   return (
     <>
       <PageHeader
         title="Dashboard"
-        subtitle="Welcome back, Teklehiwot. Here's what needs your attention today."
-        actions={
-          <>
-            <button className="gap-2 btn-outline normal-case btn btn-sm">
-              <Download className="w-3.5 h-3.5" /> Export report
-            </button>
-            <button className="gap-2 normal-case btn btn-sm btn-primary">
-              <TrendingUp className="w-3.5 h-3.5" /> View analytics
-            </button>
-          </>
-        }
+        subtitle={`Welcome back, Teklehiwot. Overview generated at ${new Date(data.generatedAt).toLocaleString()}.`}
       />
 
       <motion.div
@@ -47,42 +52,60 @@ export default function Dashboard() {
       >
         <KPICard
           title="Total Users"
-          value={formatNumber(KPIS.totalUsers.value)}
-          trend={KPIS.totalUsers.trend}
+          value={formatNumber(data.users.total)}
           icon={Users}
-          breakdown={KPIS.totalUsers.breakdown}
           gradient
+          breakdown={{
+            Farmers: data.users.farmers,
+            Investors: data.users.investors,
+            Admins: data.users.admins,
+          }}
         />
         <KPICard
           title="Active Listings"
-          value={KPIS.activeListings.value}
-          trend={KPIS.activeListings.trend}
+          value={formatNumber(data.listings.active)}
           icon={Layers}
-          breakdown={KPIS.activeListings.breakdown}
+          breakdown={{
+            Funded: data.listings.funded,
+            Completed: data.listings.completed,
+            Cancelled: data.listings.cancelled,
+            Failed: data.listings.failed,
+            Refunded: data.listings.refunded,
+          }}
         />
         <KPICard
-          title="Investment Volume"
-          value={formatETB(KPIS.investmentVolume.value)}
-          trend={KPIS.investmentVolume.trend}
+          title="Total Contracts"
+          value={formatNumber(data.investments.totalContracts)}
+          icon={FileText}
+          breakdown={{
+            Active: data.investments.activeContracts,
+            Completed: data.investments.completedContracts,
+            Refunded: data.investments.refundedContracts,
+          }}
+        />
+        <KPICard
+          title="Gross Investment"
+          value={formatETB(data.investments.grossInvestmentBirr)}
           icon={Wallet}
         />
         <KPICard
           title="Pending Verifications"
-          value={KPIS.pendingVerifications.value}
+          value={formatNumber(totalPendingVerifications)}
           icon={ShieldCheck}
-          breakdown={KPIS.pendingVerifications.breakdown}
+          breakdown={{
+            Farmers: data.queues.pendingFarmerVerifications,
+            Assets: data.queues.pendingAssets,
+          }}
         />
         <KPICard
-          title="Pending Refunds"
-          value={KPIS.pendingRefunds.value}
-          urgent={KPIS.pendingRefunds.urgent}
+          title="Refunded Amount"
+          value={formatETB(data.investments.refundedAmountBirr)}
           icon={RotateCcw}
-        />
-        <KPICard
-          title="Platform Revenue"
-          value={formatETB(KPIS.platformRevenue.value)}
-          trend={KPIS.platformRevenue.trend}
-          icon={TrendingUp}
+          badge={{
+            label: "contracts",
+            count: data.investments.refundedContracts,
+            color: "badge-error",
+          }}
         />
       </motion.div>
 
@@ -94,44 +117,47 @@ export default function Dashboard() {
       >
         <QueueAlertCard
           title="Farmer verifications"
-          count={12}
+          count={data.queues.pendingFarmerVerifications}
           color="bg-primary/10 text-primary"
           icon={CheckCircle2}
           href="/farmers"
         />
         <QueueAlertCard
           title="Asset verifications"
-          count={6}
+          count={data.queues.pendingAssets}
           color="bg-info/10 text-info"
           icon={Layers}
           href="/assets"
         />
         <QueueAlertCard
-          title="Risk alerts"
-          count={5}
+          title="Unread notifications"
+          count={data.notifications.unread}
           color="bg-warning/15 text-warning"
-          icon={AlertCircle}
-          href="/risk"
-        />
-        <QueueAlertCard
-          title="Refund requests"
-          count={7}
-          color="bg-error/10 text-error"
-          icon={RotateCcw}
-          href="/refunds"
+          icon={Bell}
+          href="#"
         />
       </motion.div>
 
-      <div className="gap-5 grid grid-cols-1 lg:grid-cols-3">
-        <div className="space-y-5 lg:col-span-2">
-          <RevenueChart />
-          <TopListingsCard />
+      <motion.div
+        variants={stagger}
+        initial="initial"
+        animate="animate"
+        className="gap-5 grid grid-cols-1 lg:grid-cols-3 mb-6"
+      >
+        <UsersSummary users={data.users} />
+        <ListingsSummary listings={data.listings} />
+        <InvestmentSummary investments={data.investments} />
+      </motion.div>
+
+      {data.users.total === 0 && (
+        <div className="mb-6 alert alert-info">
+          <AlertCircle className="w-5 h-5" />
+          <span>
+            No data available yet. The platform overview shows zero counts
+            across all metrics.
+          </span>
         </div>
-        <div className="space-y-5">
-          <SystemStatusCard />
-          <ActivityFeed />
-        </div>
-      </div>
+      )}
     </>
   );
 }

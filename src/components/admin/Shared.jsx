@@ -40,7 +40,7 @@ export function StatusBadge({ status }) {
   };
   const cls = map[status] || "badge-ghost";
   return (
-    <span className={`badge ${cls} badge-sm font-semibold capitalize`}>
+    <span className={`badge ${cls} badge-sm font-semibold capitalize px-2`}>
       {status}
     </span>
   );
@@ -51,9 +51,12 @@ export function EmptyState({
   message,
   icon: Icon,
   action,
+  style = "",
 }) {
   return (
-    <div className="flex flex-col justify-center items-center px-6 py-16 text-center">
+    <div
+      className={`flex flex-col justify-center items-center px-6 py-16 text-center ${style}`}
+    >
       <div className="place-items-center grid bg-base-200 mb-4 rounded-2xl w-16 h-16">
         {Icon ? <Icon className="w-7 h-7 text-muted-foreground" /> : null}
       </div>

@@ -17,7 +17,7 @@ export const StatusBadge = ({ status }) => {
     <div
       className={`flex items-center gap-1 px-3 py-1 rounded-full text-xs font-medium border ${colors[status]}`}
     >
-      <Icon className="w-3 h-3" />
+      {/* <Icon className="w-3 h-3" /> */}
       <span className="capitalize">{status}</span>
     </div>
   );
@@ -27,9 +27,9 @@ export const StatusBadge = ({ status }) => {
 export const AssetTypeBadge = ({ type }) => {
   return (
     <div
-      className={`badge ${type === "farmland" ? "badge-success" : "badge-info"} gap-1`}
+      className={`badge ${type === "farmland" ? "badge-success" : "badge-info"} gap-1 px-2`}
     >
-      {type === "farmland" ? "🌾 Farmland" : "🐄 Livestock"}
+      {type === "farmland" ? "Farmland" : "Livestock"}
     </div>
   );
 };

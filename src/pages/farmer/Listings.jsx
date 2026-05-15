@@ -3,18 +3,27 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Plus } from "lucide-react";
 
 import { mockListings } from "../../mock-data/farmer/listing";
-
 import { staggerContainer } from "../../utils/motionVariants";
 import ListingCard from "../../components/farmer/listing/ListingCard";
 import CreateListingModal from "../../components/farmer/listing/CreateListingModal";
+import { useAPI } from "../../hook/useApi";
+import { useSuspenseQuery } from "@tanstack/react-query";
 
 export function Listings() {
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [activeTab, setActiveTab] = useState("active");
-
-  const filteredListings = mockListings.filter((listing) => {
-    if (activeTab === "active") return listing.status === "Active";
-    if (activeTab === "funded") return listing.status === "Funded";
+  const { farmer } = useAPI();
+  const { data, isLoading, error } = useSuspenseQuery({
+    queryKey: ["listings"],
+    queryFn: () => farmer.getListings(),
+  });
+  console.log(data);
+  // Handle API response structure
+  const listings = data?.data?.listings || [];
+  const filteredListings = listings.filter((listing) => {
+    if (activeTab === "active") return listing.status === "active";
+    if (activeTab === "funded") return listing.status === "funded";
+    if (activeTab === "completed") return listing.status === "completed";
     return true;
   });
 

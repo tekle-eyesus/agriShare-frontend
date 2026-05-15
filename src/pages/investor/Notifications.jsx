@@ -56,13 +56,16 @@ export default function Notifications() {
         subtitle="Stay up to date with investments, distributions, and farmer updates."
         actions={
           <>
-            <button onClick={markAll} className="gap-2 btn-outline btn btn-sm">
+            <button
+              onClick={markAll}
+              className="gap-2 border btn-outline btn btn-sm"
+            >
               <Check className="w-4 h-4" />
               Mark all read
             </button>
             <button
               onClick={deleteAll}
-              className="gap-2 text-error btn btn-ghost btn-sm"
+              className="gap-2 hover:border text-error btn btn-ghost btn-sm"
             >
               <Trash2 className="w-4 h-4" />
               Clear
@@ -78,22 +81,30 @@ export default function Notifications() {
             Filter:
           </div>
           <div className="join">
-            {TYPES.map((t) => (
+            {TYPES.map((t, i) => (
               <button
                 key={t}
                 onClick={() => setType(t)}
-                className={`join-item btn btn-xs capitalize ${type === t ? "btn-primary" : "btn-outline"}`}
+                className={`
+        join-item btn btn-sm flex-1 border
+        ${type === t ? "btn-primary" : "btn-outline"}
+        ${i !== 0 ? "border-l-0" : ""}
+      `}
               >
                 {t}
               </button>
             ))}
           </div>
           <div className="ml-auto join">
-            {READ_FILTER.map((r) => (
+            {READ_FILTER.map((r, i) => (
               <button
                 key={r}
                 onClick={() => setRead(r)}
-                className={`join-item btn btn-xs ${read === r ? "btn-primary" : "btn-outline"}`}
+                className={`
+        join-item btn btn-sm flex-1 border
+        ${read === r ? "btn-primary" : "btn-outline"}
+        ${i !== 0 ? "border-l-0" : ""}
+      `}
               >
                 {r}
               </button>
@@ -121,9 +132,7 @@ export default function Notifications() {
                 animate={{ opacity: 1, x: 0 }}
                 onClick={() => markRead(n.id)}
                 className={`bg-base-100 rounded-2xl border p-4 flex gap-3 cursor-pointer transition-all hover:shadow-card ${
-                  !n.read
-                    ? "border-primary/40 bg-primary/2"
-                    : "border-base-300"
+                  !n.read ? "border-primary/40 bg-primary/2" : "border-base-300"
                 }`}
               >
                 <div

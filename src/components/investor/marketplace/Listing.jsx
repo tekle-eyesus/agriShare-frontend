@@ -1,7 +1,7 @@
 import { ArrowUpRight, Clock, Eye, MapPin, Users } from "lucide-react";
 import { formatETB } from "../../../utils/format";
 import { Link } from "react-router-dom";
-import { Card, RiskBadge, StatusBadge } from "../shared";
+import { Card, RiskBadge, StatusBadge } from "../Shared";
 
 function Listing({ listing, handleQuickView }) {
   return (

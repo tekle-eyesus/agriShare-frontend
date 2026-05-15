@@ -1,6 +1,6 @@
 import { AnimatePresence, motion } from "framer-motion";
 import { X, Mail, Phone, Send } from "lucide-react";
-import { overlayVariants, modalVariants } from "../../../utils/animations";
+import { overlayVariants, modalVariants } from "../../../utils/motionVariants";
 import { mockInvestmentHistory } from "../../../mock-data/farmer/investor";
 
 const Dialog = {

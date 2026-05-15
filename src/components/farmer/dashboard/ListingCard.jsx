@@ -13,7 +13,7 @@ const StatusBadge = ({ status }) => {
   return (
     <motion.div
       variants={fadeInUp}
-      className={`badge ${variants[status] || "badge-ghost"}`}
+      className={`badge px-2 ${variants[status] || "badge-ghost"}`}
     >
       {status}
     </motion.div>

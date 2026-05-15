@@ -11,16 +11,22 @@ export const staggerContainer = {
   animate: { transition: { staggerChildren: 0.06 } },
 };
 
-export function PageHeader({
-  title, subtitle, actions,
-}) {
+export function PageHeader({ title, subtitle, actions }) {
   return (
-    <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 mb-6 lg:mb-8">
+    <div className="flex sm:flex-row flex-col sm:justify-between sm:items-end gap-4 mb-6 lg:mb-8">
       <div>
-        <h1 className="text-2xl sm:text-3xl font-display font-bold tracking-tight">{title}</h1>
-        {subtitle && <p className="text-sm text-muted-foreground mt-1.5 max-w-2xl">{subtitle}</p>}
+        <h1 className="font-display font-bold text-2xl sm:text-3xl tracking-tight">
+          {title}
+        </h1>
+        {subtitle && (
+          <p className="mt-1.5 max-w-2xl text-muted-foreground text-sm">
+            {subtitle}
+          </p>
+        )}
       </div>
-      {actions && <div className="flex flex-wrap items-center gap-2">{actions}</div>}
+      {actions && (
+        <div className="flex flex-wrap items-center gap-2">{actions}</div>
+      )}
     </div>
   );
 }
@@ -48,19 +54,28 @@ export function StatusBadge({ status }) {
     Livestock: "badge-info",
   };
   const cls = map[status] || "badge-ghost";
-  return <span className={`badge ${cls} badge-sm font-semibold capitalize`}>{status}</span>;
+  return (
+    <span className={`badge ${cls} badge-sm font-semibold capitalize px-2`}>
+      {status}
+    </span>
+  );
 }
 
 export function EmptyState({
-  title = "Nothing here yet", message, icon: Icon = Inbox, action,
+  title = "Nothing here yet",
+  message,
+  icon: Icon = Inbox,
+  action,
 }) {
   return (
-    <div className="flex flex-col items-center justify-center py-16 px-6 text-center">
-      <div className="w-16 h-16 rounded-2xl bg-base-200 grid place-items-center mb-4">
+    <div className="flex flex-col justify-center items-center px-6 py-16 text-center">
+      <div className="place-items-center grid bg-base-200 mb-4 rounded-2xl w-16 h-16">
         <Icon className="w-7 h-7 text-muted-foreground" />
       </div>
       <p className="font-semibold">{title}</p>
-      {message && <p className="text-sm text-muted-foreground mt-1 max-w-sm">{message}</p>}
+      {message && (
+        <p className="mt-1 max-w-sm text-muted-foreground text-sm">{message}</p>
+      )}
       {action && <div className="mt-4">{action}</div>}
     </div>
   );
@@ -68,8 +83,8 @@ export function EmptyState({
 
 export function LoadingSpinner({ label }) {
   return (
-    <div className="flex items-center justify-center gap-3 py-8 text-muted-foreground">
-      <span className="loading loading-spinner loading-md text-primary" />
+    <div className="flex justify-center items-center gap-3 py-8 text-muted-foreground">
+      <span className="text-primary loading loading-spinner loading-md" />
       {label && <span className="text-sm">{label}</span>}
     </div>
   );
@@ -77,10 +92,10 @@ export function LoadingSpinner({ label }) {
 
 export function SkeletonCard() {
   return (
-    <div className="bg-base-100 rounded-2xl border border-base-300 p-5 animate-pulse">
-      <div className="h-4 w-24 bg-base-300 rounded mb-3" />
-      <div className="h-8 w-32 bg-base-300 rounded mb-2" />
-      <div className="h-3 w-40 bg-base-300 rounded" />
+    <div className="bg-base-100 p-5 border border-base-300 rounded-2xl animate-pulse">
+      <div className="bg-base-300 mb-3 rounded w-24 h-4" />
+      <div className="bg-base-300 mb-2 rounded w-32 h-8" />
+      <div className="bg-base-300 rounded w-40 h-3" />
     </div>
   );
 }
@@ -99,12 +114,20 @@ export function Card({ children, className = "", hover = true }) {
 
 export function RatingStars({ rating, size = 14 }) {
   return (
-    <div className="inline-flex items-center gap-0.5" aria-label={`Rating ${rating} out of 5`}>
+    <div
+      className="inline-flex items-center gap-0.5"
+      aria-label={`Rating ${rating} out of 5`}
+    >
       {Array.from({ length: 5 }).map((_, i) => (
         <Star
           key={i}
-          width={size} height={size}
-          className={i < Math.round(rating) ? "fill-warning text-warning" : "text-base-300"}
+          width={size}
+          height={size}
+          className={
+            i < Math.round(rating)
+              ? "fill-warning text-warning"
+              : "text-base-300"
+          }
         />
       ))}
     </div>
@@ -117,5 +140,11 @@ export function RiskBadge({ level }) {
     medium: "badge-warning",
     high: "badge-error",
   };
-  return <span className={`badge ${map[level] || "badge-ghost"} badge-sm capitalize font-semibold`}>{level} risk</span>;
+  return (
+    <span
+      className={`badge ${map[level] || "badge-ghost"} badge-sm capitalize font-semibold px-2`}
+    >
+      {level} risk
+    </span>
+  );
 }

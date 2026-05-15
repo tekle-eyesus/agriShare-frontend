@@ -1,50 +1,51 @@
 import { motion } from "framer-motion";
 import { useMemo, useState } from "react";
-import { Search, UserPlus, Eye, Send } from "lucide-react";
+import { Search, Eye } from "lucide-react";
 import {
   PageHeader,
   Card,
   StatusBadge,
   EmptyState,
 } from "../../components/admin/shared";
-import Modal from "../../components/admin/Modal";
-import { USERS } from "../../mock-data/admin/data";
 import UserProfileModal from "../../components/admin/user-management/UserProfileModal";
+import { useSuspenseQuery } from "@tanstack/react-query";
+import { useAPI } from "../../hook/useApi";
 
 export default function UserManagement() {
   const [q, setQ] = useState("");
   const [role, setRole] = useState("All");
   const [active, setActive] = useState(null);
-  const [invite, setInvite] = useState(false);
-  const [inviteEmail, setInviteEmail] = useState("");
+  const { admin } = useAPI();
+  const { data } = useSuspenseQuery({
+    queryKey: ["users"],
+    queryFn: () => admin.getAllUsers(),
+  });
+
+  const users = data?.data?.users || [];
+  const totalCount = data?.data?.total || 0;
 
   const filtered = useMemo(
     () =>
-      USERS.filter((u) => {
+      users.filter((u) => {
         if (
           q &&
-          !`${u.name} ${u.email}`.toLowerCase().includes(q.toLowerCase())
+          !`${u.firstName} ${u.lastName} ${u.email}`
+            .toLowerCase()
+            .startsWith(q.toLowerCase())
         )
           return false;
-        if (role !== "All" && u.role !== role) return false;
+        if (role !== "All" && u.role.toLowerCase() !== role.toLowerCase())
+          return false;
         return true;
       }),
-    [q, role],
+    [q, role, users],
   );
 
   return (
     <>
       <PageHeader
-        title="User Management"
-        subtitle="1,247 total users — 892 farmers, 342 investors, 13 admins. 12 new this week."
-        actions={
-          <button
-            onClick={() => setInvite(true)}
-            className="gap-2 normal-case btn btn-sm btn-primary"
-          >
-            <UserPlus className="w-3.5 h-3.5" /> Invite user
-          </button>
-        }
+      // title="User Management"
+      // subtitle={`${totalCount} total users`}
       />
 
       <Card className="flex sm:flex-row flex-col gap-2 mb-4 p-3">
@@ -58,13 +59,13 @@ export default function UserManagement() {
           />
         </label>
         <div className="join">
-          {["All", "Farmer", "Investor", "Admin"].map((r) => (
+          {["All", "farmer", "investor", "admin"].map((r) => (
             <button
               key={r}
               onClick={() => setRole(r)}
               className={`join-item btn btn-sm normal-case ${role === r ? "btn-primary" : "btn-outline"}`}
             >
-              {r}
+              {r.charAt(0).toUpperCase() + r.slice(1)}
             </button>
           ))}
         </div>
@@ -93,7 +94,7 @@ export default function UserManagement() {
               <tbody>
                 {filtered.map((u, i) => (
                   <motion.tr
-                    key={u.id}
+                    key={u._id}
                     initial={{ opacity: 0, x: -8 }}
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ delay: i * 0.03 }}
@@ -104,7 +105,7 @@ export default function UserManagement() {
                         <div className="avatar placeholder">
                           <div className="rounded-full w-9 text-primary-content gradient-primary">
                             <span className="font-bold text-xs">
-                              {u.name
+                              {`${u.firstName} ${u.lastName}`
                                 .split(" ")
                                 .map((s) => s[0])
                                 .join("")}
@@ -112,7 +113,9 @@ export default function UserManagement() {
                           </div>
                         </div>
                         <div>
-                          <p className="font-semibold text-sm">{u.name}</p>
+                          <p className="font-semibold text-sm">
+                            {u.firstName} {u.lastName}
+                          </p>
                           <p className="text-muted-foreground text-xs">
                             {u.email}
                           </p>
@@ -125,15 +128,17 @@ export default function UserManagement() {
                     <td className="hidden md:table-cell">
                       <input
                         type="checkbox"
-                        defaultChecked={u.status === "active"}
+                        defaultChecked={u.isActive}
                         className="toggle toggle-primary toggle-sm"
                       />
                     </td>
                     <td className="hidden lg:table-cell text-muted-foreground text-sm">
-                      {u.joined}
+                      {new Date(u.createdAt).toLocaleDateString()}
                     </td>
                     <td className="hidden lg:table-cell text-muted-foreground text-sm">
-                      {u.lastActive}
+                      {u.updatedAt
+                        ? new Date(u.updatedAt).toLocaleDateString()
+                        : "-"}
                     </td>
                     <td>
                       <div className="flex justify-end gap-1">
@@ -154,50 +159,6 @@ export default function UserManagement() {
       </Card>
 
       <UserProfileModal active={active} setActive={setActive} />
-
-      <Modal
-        open={invite}
-        onClose={() => setInvite(false)}
-        title="Invite new admin"
-        size="sm"
-      >
-        <div className="space-y-4 p-6">
-          <div>
-            <label className="block mb-2 font-semibold text-muted-foreground text-xs uppercase tracking-wider">
-              Email
-            </label>
-            <input
-              value={inviteEmail}
-              onChange={(e) => setInviteEmail(e.target.value)}
-              type="email"
-              placeholder="name@agrishare.et"
-              className="rounded-xl w-full input input-bordered"
-            />
-          </div>
-          <div>
-            <label className="block mb-2 font-semibold text-muted-foreground text-xs uppercase tracking-wider">
-              Role
-            </label>
-            <select className="rounded-xl w-full select-bordered select">
-              <option>Admin</option>
-              <option>Super Admin</option>
-            </select>
-          </div>
-          <div>
-            <label className="block mb-2 font-semibold text-muted-foreground text-xs uppercase tracking-wider">
-              Message (optional)
-            </label>
-            <textarea
-              rows={3}
-              className="rounded-xl w-full text-sm textarea textarea-bordered"
-              placeholder="Welcome message…"
-            />
-          </div>
-          <button className="gap-2 w-full normal-case btn btn-primary">
-            <Send className="w-4 h-4" /> Send invitation
-          </button>
-        </div>
-      </Modal>
     </>
   );
 }

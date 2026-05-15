@@ -31,7 +31,7 @@ export default function Refunds() {
     setReason("");
     setAgree(false);
   };
-
+  //TODO: make sure the refund form is available through modal in mobile for the responsiveness
   return (
     <div>
       <PageHeader

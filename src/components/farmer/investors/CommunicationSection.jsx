@@ -1,5 +1,6 @@
 import { motion } from "framer-motion";
 import { Send } from "lucide-react";
+import { fadeInUp } from "../../investor/Shared";
 
 function CommunicationSection() {
   return (

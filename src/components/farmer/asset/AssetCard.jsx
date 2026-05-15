@@ -5,6 +5,14 @@ import { AssetTypeBadge } from "./Badges";
 import { StatusBadge } from "./Badges";
 
 function AssetCard({ asset, onViewDetails, onEdit, onDelete }) {
+  // Format location for display
+  const formatLocation = (location) => {
+    if (typeof location === "object" && location.kebele) {
+      return `${location.kebele}, ${location.woreda}, ${location.zone}, ${location.region}`;
+    }
+    return location || "";
+  };
+
   return (
     <motion.div
       variants={fadeInUp}
@@ -14,7 +22,7 @@ function AssetCard({ asset, onViewDetails, onEdit, onDelete }) {
     >
       <figure className="relative h-48">
         <img
-          src={asset.image}
+          src={asset.photos?.[0]?.url || asset.image}
           alt={asset.name}
           className="w-full h-full object-cover"
         />
@@ -33,21 +41,29 @@ function AssetCard({ asset, onViewDetails, onEdit, onDelete }) {
 
         <div className="flex items-start gap-2 text-sm text-base-content/70">
           <MapPin className="mt-0.5 w-4 h-4 shrink-0" />
-          <span className="text-xs line-clamp-2">{asset.location}</span>
+          <span className="text-xs line-clamp-2">
+            {formatLocation(asset.location)}
+          </span>
         </div>
 
         <div className="flex justify-between items-center mt-2">
-          <span className="font-medium text-sm">{asset.size}</span>
+          <span className="font-medium text-sm">
+            {asset.type === "farmland"
+              ? `${asset.size} ha`
+              : asset.type === "livestock"
+                ? `${asset.livestockDetails?.quantity} ${asset.livestockDetails?.species}`
+                : asset.size}
+          </span>
         </div>
 
         <div className="flex items-center gap-4 mt-2 text-xs text-base-content/60">
           <div className="flex items-center gap-1">
             <FileText className="w-3.5 h-3.5" />
-            <span>{asset.documents} docs</span>
+            <span>{asset.documents?.length || 0} docs</span>
           </div>
           <div className="flex items-center gap-1">
             <ImageIcon className="w-3.5 h-3.5" />
-            <span>{asset.images} images</span>
+            <span>{asset.photos?.length || 0} images</span>
           </div>
         </div>
 
@@ -62,21 +78,21 @@ function AssetCard({ asset, onViewDetails, onEdit, onDelete }) {
 
         <div className="justify-stretch gap-2 mt-4 card-actions">
           <button
-            onClick={() => onViewDetails(asset)}
-            className="flex-1 btn btn-primary btn-sm"
+            onClick={onViewDetails}
+            className="flex-1 border btn btn-primary btn-sm"
           >
             View Details
           </button>
           <button
             onClick={() => onEdit(asset)}
-            className="btn-outline btn btn-sm"
+            className="border border-gray-200 btn-outline btn btn-sm"
           >
             <Edit className="w-4 h-4" />
           </button>
           {!asset.hasListing && (
             <button
               onClick={() => onDelete(asset)}
-              className="btn-outline btn btn-sm btn-error"
+              className="border border-gray-200 btn-outline btn btn-sm btn-error"
             >
               <Trash2 className="w-4 h-4" />
             </button>

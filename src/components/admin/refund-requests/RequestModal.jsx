@@ -19,7 +19,41 @@ function Field({ label, value, mono, highlight }) {
   );
 }
 
-function RequestModal({ active, setActive, note, setNote, force, setForce }) {
+function RequestModal({
+  active,
+  setActive,
+  note,
+  setNote,
+  force,
+  setForce,
+  reviewRefundMutation,
+}) {
+  const handleApprove = () => {
+    reviewRefundMutation.mutate({
+      refundRequestId: active._id,
+      data: {
+        status: "approved",
+        adminNote: note,
+        forceRefund: force,
+      },
+    });
+  };
+
+  const handleReject = () => {
+    if (!note.trim()) {
+      alert("Admin note is required for rejection");
+      return;
+    }
+    reviewRefundMutation.mutate({
+      refundRequestId: active._id,
+      data: {
+        status: "rejected",
+        adminNote: note,
+        forceRefund: false,
+      },
+    });
+  };
+
   return (
     <Modal
       open={!!active}
@@ -30,13 +64,26 @@ function RequestModal({ active, setActive, note, setNote, force, setForce }) {
       {active && (
         <div className="space-y-5 p-6">
           <div className="gap-3 grid grid-cols-2 sm:grid-cols-4">
-            <Field label="Investor" value={active.investor} />
-            <Field label="Farmer" value={active.farmer} />
-            <Field label="Listing" value={active.listing} />
-            <Field label="Request ID" value={active.id} mono />
-            <Field label="Amount" value={formatETB(active.amount)} highlight />
-            <Field label="Shares" value={active.shares} />
-            <Field label="Requested" value={active.requestedAt} />
+            <Field
+              label="Investor"
+              value={`${active.investor?.firstName} ${active.investor?.lastName}`}
+            />
+            <Field
+              label="Farmer"
+              value={`${active.farmer?.firstName} ${active.farmer?.lastName}`}
+            />
+            <Field label="Listing" value={active.listing?.pitchTitle} />
+            <Field label="Request ID" value={active._id} mono />
+            <Field
+              label="Amount"
+              value={formatETB(active.refundAmountBirr)}
+              highlight
+            />
+            <Field label="Shares" value={active.sharesCount} />
+            <Field
+              label="Requested"
+              value={new Date(active.createdAt).toLocaleDateString()}
+            />
             <Field label="Status" value={active.status} />
           </div>
 
@@ -63,17 +110,17 @@ function RequestModal({ active, setActive, note, setNote, force, setForce }) {
                 {
                   w: "Investor",
                   before: 142_500,
-                  after: 142_500 + active.amount,
+                  after: 142_500 + active.refundAmountBirr,
                 },
                 {
                   w: "Farmer",
                   before: 320_000,
-                  after: 320_000 - active.amount,
+                  after: 320_000 - active.refundAmountBirr,
                 },
                 {
                   w: "Escrow",
                   before: 580_000,
-                  after: 580_000 - active.amount,
+                  after: 580_000 - active.refundAmountBirr,
                 },
               ].map((row) => (
                 <div
@@ -124,10 +171,18 @@ function RequestModal({ active, setActive, note, setNote, force, setForce }) {
           </label>
 
           <div className="flex sm:flex-row flex-col gap-2 pt-2 border-base-300 border-t">
-            <button className="flex-1 gap-2 normal-case btn btn-success">
+            <button
+              onClick={handleApprove}
+              disabled={reviewRefundMutation.isPending}
+              className="flex-1 gap-2 normal-case btn btn-success"
+            >
               <CheckCircle2 className="w-4 h-4" /> Approve refund
             </button>
-            <button className="flex-1 gap-2 btn-outline normal-case btn btn-error">
+            <button
+              onClick={handleReject}
+              disabled={reviewRefundMutation.isPending || !note.trim()}
+              className="flex-1 gap-2 btn-outline normal-case btn btn-error"
+            >
               <XCircle className="w-4 h-4" /> Reject request
             </button>
           </div>

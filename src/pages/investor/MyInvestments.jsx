@@ -55,7 +55,10 @@ export default function MyInvestments() {
         title="My Investments"
         subtitle="Track your portfolio, ROI, and upcoming payouts."
         actions={
-          <button onClick={exportCSV} className="gap-2 btn-outline btn btn-sm">
+          <button
+            onClick={exportCSV}
+            className="gap-2 border btn-outline btn btn-sm"
+          >
             <Download className="w-4 h-4" />
             Export CSV
           </button>

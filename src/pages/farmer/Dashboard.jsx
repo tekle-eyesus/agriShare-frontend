@@ -3,14 +3,12 @@ import { motion } from "framer-motion";
 import { Link } from "react-router";
 import {
   Plus,
-  TrendingUp,
   Bell,
   MessageCircle,
   Phone,
   Wallet,
   Coins,
   History,
-  Users,
   ArrowRight,
 } from "lucide-react";
 import {
@@ -30,7 +28,7 @@ import {
   NotificationItem,
 } from "../../components/farmer/dashboard/Items";
 import UpcomingPayout from "../../components/farmer/dashboard/UpcomingPayout";
-import QuickAction from "../../components/farmer/dashboard/QuickAction";
+import QuickActions from "../../components/farmer/dashboard/QuickActions";
 
 const SupportCard = () => {
   return (
@@ -126,32 +124,8 @@ export function Dashboard() {
               </div>
             </div>
 
-            {/* Quick Actions */}
-            <div className="bg-base-100 shadow-md border border-base-200 card">
-              <div className="p-6 card-body">
-                <h3 className="mb-4 font-semibold text-lg">Quick Actions</h3>
-                <div className="gap-3 grid grid-cols-2 sm:grid-cols-4">
-                  <QuickAction icon={Plus} label="Create Asset" to="/assets" />
-                  <QuickAction
-                    icon={TrendingUp}
-                    label="New Listing"
-                    to="/listings"
-                  />
-                  <QuickAction
-                    icon={Bell}
-                    label="Post Update"
-                    onClick={() => console.log("Post Update")}
-                  />
-                  <QuickAction
-                    icon={Users}
-                    label="View Investors"
-                    to="/investors"
-                  />
-                </div>
-              </div>
-            </div>
+            <QuickActions />
 
-            {/* Recent Investor Activity */}
             <div className="bg-base-100 shadow-md border border-base-200 card">
               <div className="p-6 card-body">
                 <h3 className="mb-4 font-semibold text-lg">

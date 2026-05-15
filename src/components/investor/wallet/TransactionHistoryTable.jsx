@@ -48,7 +48,7 @@ function TransactionHistoryTable({ slice, page, pages, setPage }) {
             <button
               disabled={page === 1}
               onClick={() => setPage(page - 1)}
-              className="join-item btn btn-xs"
+              className="border join-item btn btn-xs"
             >
               «
             </button>
@@ -56,7 +56,11 @@ function TransactionHistoryTable({ slice, page, pages, setPage }) {
               <button
                 key={i}
                 onClick={() => setPage(i + 1)}
-                className={`join-item btn btn-xs ${page === i + 1 ? "btn-primary" : ""}`}
+                className={`
+        join-item btn btn-xs flex-1 border
+        ${page === i + 1 ? "btn-primary" : "btn-outline"}
+        ${i !== 0 ? "border-l-0" : ""}
+      `}
               >
                 {i + 1}
               </button>
@@ -64,7 +68,7 @@ function TransactionHistoryTable({ slice, page, pages, setPage }) {
             <button
               disabled={page === pages}
               onClick={() => setPage(page + 1)}
-              className="join-item btn btn-xs"
+              className="border join-item btn btn-xs"
             >
               »
             </button>

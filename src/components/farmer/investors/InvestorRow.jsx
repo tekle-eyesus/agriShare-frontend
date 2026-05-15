@@ -1,4 +1,6 @@
 import { motion } from "framer-motion";
+import { tableRowVariants } from "../../../utils/motionVariants";
+import { Calendar, Eye, Mail, Phone } from "lucide-react";
 
 function InvestorRow({ investor, onViewDetails }) {
   return (

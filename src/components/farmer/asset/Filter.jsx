@@ -16,7 +16,7 @@ function FilterChips({ activeFilter, onFilterChange }) {
         <button
           key={filter}
           onClick={() => onFilterChange(filter)}
-          className={`btn btn-sm ${activeFilter === filter ? "btn-primary" : "btn-outline"}`}
+          className={`btn btn-sm ${activeFilter === filter ? "btn-primary" : "btn-outline border border-gray-200"}`}
         >
           {getFilterLabel(filter)}
         </button>

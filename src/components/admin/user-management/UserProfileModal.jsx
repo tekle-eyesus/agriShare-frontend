@@ -1,7 +1,8 @@
 import { formatETB } from "../../../utils/format";
 import Modal from "../Modal";
 import { StatusBadge } from "../shared";
-
+//TODO: handle the status badges
+//TODO: handle the recent activity if possible and also handle the profile picture
 function UserProfileModal({ active, setActive }) {
   return (
     <Modal
@@ -16,15 +17,14 @@ function UserProfileModal({ active, setActive }) {
             <div className="avatar placeholder">
               <div className="rounded-full w-16 text-primary-content gradient-primary">
                 <span className="font-bold text-xl">
-                  {active.name
-                    .split(" ")
-                    .map((s) => s[0])
-                    .join("")}
+                  {active.firstName} {active.lastName}
                 </span>
               </div>
             </div>
             <div className="flex-1">
-              <h3 className="font-display font-bold text-xl">{active.name}</h3>
+              <h3 className="font-display font-bold text-xl">
+                {active.firstName} {active.lastName}
+              </h3>
               <p className="text-muted-foreground text-sm">{active.email}</p>
               <div className="flex gap-2 mt-1.5">
                 <StatusBadge status={active.role} />
@@ -33,7 +33,7 @@ function UserProfileModal({ active, setActive }) {
             </div>
           </div>
 
-          <div>
+          {/* <div>
             <p className="mb-2 font-semibold text-muted-foreground text-xs uppercase tracking-wider">
               Role
             </p>
@@ -50,8 +50,8 @@ function UserProfileModal({ active, setActive }) {
                 Update role
               </button>
             </div>
-          </div>
-
+          </div> */}
+          {/*This is ony for farmer and for investors only not for admins */}
           <div>
             <p className="mb-2 font-semibold text-muted-foreground text-xs uppercase tracking-wider">
               Financial
@@ -80,7 +80,7 @@ function UserProfileModal({ active, setActive }) {
             </div>
           </div>
 
-          <div>
+          {/* <div>
             <p className="mb-2 font-semibold text-muted-foreground text-xs uppercase tracking-wider">
               Recent activity
             </p>
@@ -102,19 +102,7 @@ function UserProfileModal({ active, setActive }) {
                 </li>
               ))}
             </ul>
-          </div>
-
-          <div className="flex flex-wrap gap-2 pt-3 border-base-300 border-t">
-            <button className="btn-outline normal-case btn btn-sm">
-              Reset password
-            </button>
-            <button className="btn-outline normal-case btn btn-sm btn-warning">
-              Suspend
-            </button>
-            <button className="ml-auto btn-outline normal-case btn btn-sm btn-error">
-              Delete account
-            </button>
-          </div>
+          </div> */}
         </div>
       )}
     </Modal>

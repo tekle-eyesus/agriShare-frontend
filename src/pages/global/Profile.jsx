@@ -1,25 +1,14 @@
 import { useState } from "react";
-import {
-  User,
-  CreditCard,
-  Bell,
-  Shield,
-  Trash2,
-  BadgeCheck,
-} from "lucide-react";
+import { User, Shield, Trash2, BadgeCheck } from "lucide-react";
 import { PageHeader, Card } from "../../components/investor/Shared";
-import DeleteSection from "../../components/investor/profile/DeleteSection";
-import ProfileSection from "../../components/investor/profile/ProfileSection";
-import PaymentSection from "../../components/investor/profile/PaymentSection";
-import NotifSection from "../../components/investor/profile/NotifSection";
-import KYCSection from "../../components/investor/profile/KYCSection";
-import SecuritySection from "../../components/investor/profile/SecuritySection";
+import DeleteSection from "../../components/common/profile/DeleteSection";
+import ProfileSection from "../../components/common/profile/ProfileSection";
+// import KYCSection from "../../components/common/profile/KYCSection";
+import SecuritySection from "../../components/common/profile/SecuritySection";
 
 const SECTIONS = [
   { id: "profile", label: "Profile information", icon: User },
-  { id: "payment", label: "Payment methods", icon: CreditCard },
-  { id: "notifications", label: "Notification preferences", icon: Bell },
-  { id: "kyc", label: "KYC / Verification", icon: BadgeCheck },
+  // { id: "kyc", label: "KYC / Verification", icon: BadgeCheck },
   { id: "security", label: "Security", icon: Shield },
   { id: "delete", label: "Delete account", icon: Trash2 },
 ];
@@ -59,9 +48,9 @@ export default function Profile() {
 
         <div className="space-y-4 lg:col-span-3">
           {section === "profile" && <ProfileSection />}
-          {section === "payment" && <PaymentSection />}
-          {section === "notifications" && <NotifSection />}
-          {section === "kyc" && <KYCSection />}
+          {/* {section === "payment" && <PaymentSection />} */}
+          {/* {section === "notifications" && <NotifSection />} */}
+          {/* {section === "kyc" && <KYCSection />} */}
           {section === "security" && <SecuritySection />}
           {section === "delete" && <DeleteSection />}
         </div>

@@ -1,43 +1,29 @@
 import { NavLink, Outlet, useLocation } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import {
-  LayoutDashboard,
-  ShoppingCart,
-  TrendingUp,
-  DollarSign,
-  RefreshCw,
-  CreditCard,
-  Star,
-  Bell,
-  User,
-  Sprout,
-  Menu,
-  Search,
-  X,
-} from "lucide-react";
+import { Sprout, Menu, Search, X, LogOut } from "lucide-react";
 import { useState } from "react";
-import { NOTIFICATIONS } from "../../mock-data/investor/data";
-
-const NAV = [
-  { to: "/investor", label: "Dashboard", icon: LayoutDashboard, end: true },
-  { to: "/investor/marketplace", label: "Marketplace", icon: ShoppingCart },
-  { to: "/investor/investments", label: "My Investments", icon: TrendingUp },
-  { to: "/investor/distributions", label: "Distributions", icon: DollarSign },
-  { to: "/investor/refunds", label: "Refund Requests", icon: RefreshCw },
-  { to: "/investor/wallet", label: "Wallet", icon: CreditCard },
-  { to: "/investor/reviews", label: "My Reviews", icon: Star },
-  { to: "/investor/notifications", label: "Notifications", icon: Bell },
-  { to: "/investor/profile", label: "Profile", icon: User },
-];
-
-const MOBILE_NAV = NAV.slice(0, 5);
+import ThemeToggle from "../ThemeToggle";
+import { useAuthStore } from "../../store/useAuth";
+import { NOTIFICATIONS } from "../../mock-data/farmer/data";
+import { farmerNav, adminNav, investorNav } from "../../routes/navLinks";
 
 export default function AppLayout() {
-  const [collapsed, setCollapsed] = useState(false);
-  const [mobileMenu, setMobileMenu] = useState(false);
   const location = useLocation();
+  const { authUser, isCheckingAuth } = useAuthStore();
+  const userRole = authUser?.role;
+  const NAV =
+    userRole === "farmer"
+      ? farmerNav
+      : userRole === "admin"
+        ? adminNav
+        : investorNav;
+  const MOBILE_NAV = NAV.slice(0, 5);
+  const role = userRole;
   const unread = NOTIFICATIONS.filter((n) => !n.read).length;
 
+  const [collapsed, setCollapsed] = useState(false);
+  const [mobileMenu, setMobileMenu] = useState(false);
+  const { logout } = useAuthStore();
   return (
     <div className="flex bg-base-200 min-h-screen">
       {/* Desktop sidebar */}
@@ -47,16 +33,18 @@ export default function AppLayout() {
         className="hidden top-0 sticky lg:flex flex-col bg-base-100 border-base-300 border-r h-screen"
       >
         <div className="flex items-center gap-3 px-5 border-base-300 border-b h-16">
-          <div className="place-items-center grid shadow-glow rounded-xl w-9 h-9 gradient-primary">
-            <Sprout className="w-5 h-5 text-primary-content" />
-          </div>
+          {!collapsed && (
+            <div className="place-items-center grid shadow-glow rounded-xl w-9 h-9 gradient-primary shrink-0">
+              <Sprout className="w-5 h-5 text-primary-content" />
+            </div>
+          )}
           {!collapsed && (
             <div className="flex-1">
               <p className="font-display font-bold text-base leading-none">
                 AgriShare
               </p>
               <p className="mt-0.5 text-[11px] text-muted-foreground">
-                Investor Portal
+                {`${role.charAt(0).toUpperCase() + role.slice(1)} Portal`}
               </p>
             </div>
           )}
@@ -75,7 +63,6 @@ export default function AppLayout() {
             const active = item.end
               ? location.pathname === item.to
               : location.pathname.startsWith(item.to);
-            const badge = item.to === "/investor/notifications" ? unread : 0;
             return (
               <NavLink
                 key={item.to}
@@ -89,7 +76,7 @@ export default function AppLayout() {
               >
                 {active && (
                   <motion.div
-                    layoutId="investorActiveNav"
+                    layoutId="farmerActiveNav"
                     className="top-1/2 left-0 absolute bg-primary rounded-r-full w-1 h-6 -translate-y-1/2"
                   />
                 )}
@@ -97,14 +84,16 @@ export default function AppLayout() {
                 {!collapsed && (
                   <span className="flex-1 truncate">{item.label}</span>
                 )}
-                {!collapsed && badge > 0 && (
-                  <span className="bg-error border-0 text-error-content badge badge-sm">
-                    {badge}
-                  </span>
-                )}
               </NavLink>
             );
           })}
+          <span
+            className="group relative flex items-center gap-3 hover:bg-base-200 px-3 py-2.5 rounded-xl font-medium text-sm text-base-content/70 hover:text-base-content transition-all cursor-pointer"
+            onClick={() => logout()}
+          >
+            <LogOut className="w-[18px] h-[18px] shrink-0" />
+            {!collapsed && <span className="flex-1 truncate">Logout</span>}
+          </span>
         </nav>
 
         <div className="p-3 border-base-300 border-t">
@@ -112,15 +101,16 @@ export default function AppLayout() {
             className={`flex items-center gap-3 ${collapsed ? "justify-center" : ""}`}
           >
             <div className="avatar placeholder">
-              <div className="rounded-full w-9 text-primary-content gradient-primary">
-                <span className="font-semibold text-xs">YS</span>
+              <div className="flex justify-center items-center rounded-full w-9 text-primary-content gradient-primary">
+                <span className="font-semibold text-xs">
+                  {authUser.firstName?.slice(0, 2)}
+                </span>
               </div>
             </div>
             {!collapsed && (
               <div className="flex-1 min-w-0">
-                <p className="font-semibold text-sm truncate">Yodit Solomon</p>
-                <p className="text-[11px] text-muted-foreground truncate">
-                  Investor
+                <p className="font-semibold text-sm truncate">
+                  {authUser?.firstName}
                 </p>
               </div>
             )}
@@ -134,6 +124,7 @@ export default function AppLayout() {
           <button
             className="lg:hidden btn btn-ghost btn-sm btn-square"
             onClick={() => setMobileMenu(true)}
+            aria-label="Open menu"
           >
             <Menu className="w-5 h-5" />
           </button>
@@ -149,34 +140,16 @@ export default function AppLayout() {
               <Search className="w-4 h-4 text-muted-foreground" />
               <input
                 type="search"
-                placeholder="Search listings, farmers…"
+                placeholder="Search assets, listings, investors…"
                 className="bg-transparent outline-none text-sm grow"
                 aria-label="Search"
               />
-              <kbd className="hidden lg:inline-flex kbd kbd-xs">⌘K</kbd>
             </label>
           </div>
 
           <div className="flex-1 lg:flex-none" />
-
-          <NavLink
-            to="/investor/notifications"
-            className="relative btn btn-ghost btn-sm btn-square"
-            aria-label="Notifications"
-          >
-            <Bell className="w-4 h-4" />
-            {unread > 0 && (
-              <span className="top-1 right-1 absolute place-items-center grid bg-error px-1 rounded-full ring-2 ring-base-100 min-w-[16px] h-4 font-bold text-[9px] text-error-content">
-                {unread}
-              </span>
-            )}
-          </NavLink>
-          <div className="hidden md:flex items-center gap-2 ml-1">
-            <div className="avatar placeholder">
-              <div className="rounded-full w-8 text-primary-content gradient-primary">
-                <span className="font-semibold text-[10px]">YS</span>
-              </div>
-            </div>
+          <div className="lg:ml-auto">
+            <ThemeToggle />
           </div>
         </header>
 
@@ -194,7 +167,6 @@ export default function AppLayout() {
           </AnimatePresence>
         </main>
 
-        {/* Mobile bottom nav */}
         <nav className="lg:hidden bottom-0 z-40 fixed inset-x-0 grid grid-cols-5 bg-base-100/95 backdrop-blur-xl border-base-300 border-t">
           {MOBILE_NAV.map((item) => {
             const Icon = item.icon;
@@ -220,7 +192,6 @@ export default function AppLayout() {
         </nav>
       </div>
 
-      {/* Mobile drawer */}
       <AnimatePresence>
         {mobileMenu && (
           <>
@@ -248,7 +219,7 @@ export default function AppLayout() {
                       AgriShare
                     </p>
                     <p className="mt-0.5 text-[11px] text-muted-foreground">
-                      Investor Portal
+                      {`${role.charAt(0).toUpperCase() + role.slice(1)} Portal`}
                     </p>
                   </div>
                 </div>
@@ -266,8 +237,6 @@ export default function AppLayout() {
                   const active = item.end
                     ? location.pathname === item.to
                     : location.pathname.startsWith(item.to);
-                  const badge =
-                    item.to === "/investor/notifications" ? unread : 0;
                   return (
                     <NavLink
                       key={item.to}
@@ -282,14 +251,17 @@ export default function AppLayout() {
                     >
                       <Icon className="w-[18px] h-[18px]" />
                       <span className="flex-1">{item.label}</span>
-                      {badge > 0 && (
-                        <span className="bg-error border-0 text-error-content badge badge-sm">
-                          {badge}
-                        </span>
-                      )}
                     </NavLink>
                   );
                 })}
+                <span
+                  className="group relative flex items-center gap-3 hover:bg-base-200 px-3 py-2.5 rounded-xl font-medium text-sm text-base-content/70 hover:text-base-content transition-all cursor-pointer"
+                  onClick={() => logout()}
+                >
+                  <LogOut className="w-[18px] h-[18px] shrink-0" />
+
+                  <span className="flex-1 truncate">Logout</span>
+                </span>
               </nav>
             </motion.aside>
           </>

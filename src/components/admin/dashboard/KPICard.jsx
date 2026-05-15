@@ -1,19 +1,16 @@
 import { motion } from "framer-motion";
 import { Card } from "../../../components/admin/shared";
 import { formatNumber } from "../../../utils/format";
-import { ArrowUpRight, ArrowDownRight } from "lucide-react";
 import { itemUp } from "../../../utils/motionVariants";
 
 function KPICard({
   title,
   value,
-  trend,
   icon: Icon,
   gradient = false,
   breakdown,
-  urgent,
+  badge,
 }) {
-  const up = trend !== undefined && trend >= 0;
   return (
     <motion.div variants={itemUp}>
       <Card
@@ -27,27 +24,11 @@ function KPICard({
           >
             <Icon className="w-5 h-5" />
           </div>
-          {trend !== undefined && (
-            <div
-              className={`flex items-center gap-1 text-xs font-semibold px-2 py-1 rounded-full ${
-                gradient
-                  ? "bg-white/15"
-                  : up
-                    ? "bg-success/10 text-success"
-                    : "bg-error/10 text-error"
-              }`}
+          {badge && badge.count > 0 && (
+            <span
+              className={`badge badge-sm font-bold ${badge.color || "badge-error"}`}
             >
-              {up ? (
-                <ArrowUpRight className="w-3 h-3" />
-              ) : (
-                <ArrowDownRight className="w-3 h-3" />
-              )}
-              {Math.abs(trend)}%
-            </div>
-          )}
-          {urgent !== undefined && urgent > 0 && (
-            <span className="font-bold badge badge-error badge-sm">
-              {urgent} urgent
+              {badge.count} {badge.label}
             </span>
           )}
         </div>

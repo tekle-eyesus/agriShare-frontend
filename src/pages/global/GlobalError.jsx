@@ -67,18 +67,18 @@ const GlobalError = ({ error, resetErrorBoundary }) => {
             >
               <button
                 onClick={resetErrorBoundary}
-                className="flex items-center gap-2 bg-secondary shadow-glow text-field-deep text-white btn"
+                className="flex items-center gap-2 bg-secondary shadow-glow border text-field-deep btn"
               >
                 <RotateCw className="w-4 h-4" />
                 Try again
               </button>
-              <Link
-                to="/"
-                className="flex items-center gap-2 bg-primary hover:bg-cream/10 border-cream/20 text-cream btn"
+              <span
+                onClick={() => window.location.assign("/")}
+                className="flex items-center gap-2 bg-primary hover:bg-cream/10 border border-cream/20 btn"
               >
                 <Home className="w-4 h-4" />
                 Go to homepage
-              </Link>
+              </span>
             </div>
           </div>
         </section>

@@ -27,6 +27,28 @@ export const adminApi = () => ({
         method: "GET",
       },
     ),
+  getRefundRequests: (status = "all", page = 1, limit = 20) =>
+    apiClient(
+      `/investments/admin/refund-requests?status=${status}&page=${page}&limit=${limit}`,
+      {
+        method: "GET",
+      },
+    ),
+  getListingsRiskQueue: ({
+    page = 1,
+    limit = 10,
+    daysWindow = 10,
+    maxFundingProgressPercent = 80,
+  }) =>
+    apiClient(
+      `/admin/queues/listings-risk?page=${page}&limit=${limit}&daysWindow=${daysWindow}&maxFundingProgressPercent=${maxFundingProgressPercent}`,
+      {
+        method: "GET",
+      },
+    ),
+
+  getPendingVerifications: () =>
+    apiClient("/farmer-verifications/pending", { method: "GET" }),
   updateUser: ({ data, userId }) =>
     apiClient(`/users/admin/users/${userId}`, {
       method: "PUT",
@@ -44,6 +66,16 @@ export const adminApi = () => ({
     }),
   verifyAsset: ({ data, assetId }) =>
     apiClient(`/assets/${assetId}/verify`, {
+      method: "PATCH",
+      body: JSON.stringify(data),
+    }),
+  reviewRefund: ({ data, refundRequestId }) =>
+    apiClient(`/investments/admin/refund-requests/${refundRequestId}/review`, {
+      method: "PATCH",
+      body: JSON.stringify(data),
+    }),
+  verifyFarmer: ({ id, data }) =>
+    apiClient(`/farmer-verifications/${id}/review`, {
       method: "PATCH",
       body: JSON.stringify(data),
     }),

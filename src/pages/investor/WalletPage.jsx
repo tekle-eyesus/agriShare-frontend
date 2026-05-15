@@ -66,14 +66,14 @@ export default function WalletPage() {
               <h3 className="font-display font-bold">Transaction history</h3>
               <button
                 onClick={exportCSV}
-                className="gap-1 btn-outline btn btn-xs"
+                className="gap-1 border btn-outline btn btn-xs"
               >
                 <Download className="w-3.5 h-3.5" />
                 Export
               </button>
             </div>
             <div className="gap-2 grid grid-cols-1 sm:grid-cols-3 mt-3">
-              <label className="flex items-center gap-2 sm:col-span-2 input input-sm input-bordered">
+              <label className="flex items-center gap-2 sm:col-span-2 outline outline-gray-100 input input-sm input-bordered">
                 <Search className="w-4 h-4 text-muted-foreground" />
                 <input
                   value={search}
@@ -91,7 +91,7 @@ export default function WalletPage() {
                   setType(e.target.value);
                   setPage(1);
                 }}
-                className="capitalize select-bordered select-sm select"
+                className="outline outline-gray-100 capitalize select-bordered select-sm select"
               >
                 {TYPES.map((t) => (
                   <option key={t}>{t}</option>

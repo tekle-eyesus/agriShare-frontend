@@ -13,9 +13,12 @@ export const farmerApi = () => ({
     apiClient(`/listings/${listingId}/investors`, { method: "GET" }),
   getActiveInvestments: () =>
     apiClient(`/investments/farmer/my-investments`, { method: "GET" }),
+  getVerificationStatus: () =>
+    apiClient("/farmer-verifications/me", { method: "GET" }),
 
-  createAsset: (data) =>
-    apiClient("/assets", { method: "POST", body: JSON.stringify(data) }),
+  submitVerification: (data) =>
+    apiClient("/farmer-verifications/submit", { method: "POST", body: data }),
+  createAsset: (data) => apiClient("/assets", { method: "POST", body: data }),
   listAsset: (data) =>
     apiClient("/listings", { method: "POST", body: JSON.stringify(data) }),
 

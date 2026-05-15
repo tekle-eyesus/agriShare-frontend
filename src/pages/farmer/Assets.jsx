@@ -2,28 +2,43 @@ import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Plus, Search } from "lucide-react";
 import FilterChips from "../../components/farmer/asset/Filter";
-import { mockAssets } from "../../mock-data/farmer/asset";
 import CreateAssetModal from "../../components/farmer/asset/CreateAssetModal";
 import EmptyState from "../../components/farmer/asset/EmptyState";
 import AssetCard from "../../components/farmer/asset/AssetCard";
+import ViewAssetModal from "../../components/farmer/asset/ViewAssetModal";
 import { staggerContainer } from "../../utils/motionVariants";
-
+import { useSuspenseQuery } from "@tanstack/react-query";
+import { useAPI } from "../../hook/useApi";
+//TODO: for this on the list of assets make sure the alignment is right using subgrid
 export function Assets() {
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [filterType, setFilterType] = useState("all");
-
-  const filteredAssets = mockAssets.filter((asset) => {
+  const [viewing, setViewing] = useState(null);
+  const { farmer } = useAPI();
+  const {
+    data: { data: { assets = [] } = {} },
+  } = useSuspenseQuery({
+    queryKey: ["assets"],
+    queryFn: () => farmer.getAssets(),
+  });
+  const filteredAssets = assets?.filter((asset) => {
     const matchesSearch =
-      asset.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      asset.location.toLowerCase().includes(searchQuery.toLowerCase());
+      asset.name.toLowerCase().startsWith(searchQuery.toLowerCase()) ||
+      asset.location.region
+        .toLowerCase()
+        .startsWith(searchQuery.toLowerCase()) ||
+      asset.location.woreda
+        .toLowerCase()
+        .startsWith(searchQuery.toLowerCase()) ||
+      asset.location.zone.toLowerCase().startsWith(searchQuery.toLowerCase());
     const matchesType =
       filterType === "all" ||
       asset.type === filterType ||
       asset.status === filterType;
     return matchesSearch && matchesType;
   });
-
+  // console.log(filteredAssets);
   const handleViewDetails = (asset) => {
     console.log("View details:", asset);
     // Implement view details logic
@@ -52,9 +67,7 @@ export function Assets() {
         animate={{ opacity: 1, y: 0 }}
         className="mb-6"
       >
-        <h1 className="mb-2 font-bold text-3xl">
-          My Assets (Farmland & Livestock)
-        </h1>
+        <h1 className="mb-2 font-bold text-3xl">My Assets</h1>
         <p className="text-base-content/70">
           Manage your agricultural assets before creating investment listings
         </p>
@@ -65,7 +78,7 @@ export function Assets() {
         initial={{ opacity: 0, y: -10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.1 }}
-        className="bg-base-100 shadow-md mb-6 p-6 border border-base-200 card"
+        className="bg-base-100 shadow-md mb-6 p-4 border border-base-200 card"
       >
         <div className="flex sm:flex-row flex-col gap-4 mb-4">
           <div className="flex-1">
@@ -76,7 +89,7 @@ export function Assets() {
                 placeholder="Search by asset name or location..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-10 w-full input input-bordered"
+                className="pl-10 outline outline-gray-100 focus:outline-gray-400 w-full input input-bordered"
               />
             </div>
           </div>
@@ -93,7 +106,7 @@ export function Assets() {
       </motion.div>
 
       {/* Asset Grid */}
-      {filteredAssets.length > 0 ? (
+      {filteredAssets?.length > 0 ? (
         <motion.div
           variants={staggerContainer}
           initial="initial"
@@ -103,9 +116,9 @@ export function Assets() {
           <AnimatePresence>
             {filteredAssets.map((asset) => (
               <AssetCard
-                key={asset.id}
+                key={asset._id}
                 asset={asset}
-                onViewDetails={handleViewDetails}
+                onViewDetails={() => setViewing(asset)}
                 onEdit={handleEdit}
                 onDelete={handleDelete}
               />
@@ -122,6 +135,7 @@ export function Assets() {
         onClose={() => setShowCreateModal(false)}
         onSave={handleSaveAsset}
       />
+      <ViewAssetModal asset={viewing} onClose={() => setViewing(null)} />
     </div>
   );
 }

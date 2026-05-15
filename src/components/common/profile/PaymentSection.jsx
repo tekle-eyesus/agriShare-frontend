@@ -1,4 +1,4 @@
-import { Card } from "../Shared";
+import { Card } from "../../investor/Shared";
 import { CreditCard, Plus } from "lucide-react";
 
 function PaymentSection() {

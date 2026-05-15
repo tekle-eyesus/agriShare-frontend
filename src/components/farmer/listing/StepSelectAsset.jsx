@@ -30,11 +30,11 @@ function StepSelectAsset({ assets, selectedAsset, onSelectAsset }) {
           />
         ))}
       </div>
-      <div className="mt-6">
+      {/* <div className="mt-6">
         <Link to="/assets" className="text-sm link link-primary">
           + Create New Asset
         </Link>
-      </div>
+      </div> */}
     </motion.div>
   );
 }

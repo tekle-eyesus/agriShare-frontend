@@ -12,11 +12,15 @@ function Requests({ filtered, filter, setFilter }) {
         <div className="flex flex-wrap justify-between items-center gap-2">
           <h3 className="font-display font-bold">My requests</h3>
           <div className="join">
-            {STATUS_FILTERS.map((s) => (
+            {STATUS_FILTERS.map((s, i) => (
               <button
                 key={s}
                 onClick={() => setFilter(s)}
-                className={`join-item btn btn-xs capitalize ${filter === s ? "btn-primary" : "btn-outline"}`}
+                className={`
+        join-item btn btn-sm flex-1 border
+        ${filter === s ? "btn-primary" : "btn-outline"}
+        ${i !== 0 ? "border-l-0" : ""}
+      `}
               >
                 {s}
               </button>

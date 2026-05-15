@@ -3,8 +3,6 @@ import { useMemo, useState } from "react";
 import {
   Search,
   Eye,
-  CheckCircle2,
-  XCircle,
   Clock,
   TrendingUp,
   DollarSign,
@@ -16,23 +14,35 @@ import {
   StatusBadge,
   EmptyState,
 } from "../../components/admin/shared";
-import { REFUND_REQUESTS } from "../../mock-data/admin/data";
 import { formatETB } from "../../utils/format";
 import RequestModal from "../../components/admin/refund-requests/RequestModal";
-
+import { useAPI } from "../../hook/useApi";
+import {
+  useSuspenseQuery,
+  useMutation,
+  useQueryClient,
+} from "@tanstack/react-query";
+//TODO: takecare of the cards
 export default function RefundRequests() {
   const [q, setQ] = useState("");
   const [status, setStatus] = useState("All");
   const [active, setActive] = useState(null);
   const [note, setNote] = useState("");
   const [force, setForce] = useState(false);
-
+  const { admin } = useAPI();
+  const queryClient = useQueryClient();
+  const { data } = useSuspenseQuery({
+    queryKey: ["admin-refund-requests"],
+    queryFn: () => admin.getRefundRequests(),
+  });
+  const refundRequests = data?.data?.refundRequests || [];
+  const totalCount = data?.data?.total || 0;
   const filtered = useMemo(
     () =>
-      REFUND_REQUESTS.filter((r) => {
+      refundRequests.filter((r) => {
         if (
           q &&
-          !`${r.investor} ${r.farmer} ${r.id}`
+          !`${r.investor?.firstName} ${r.investor?.lastName} ${r.farmer?.firstName} ${r.farmer?.lastName} ${r._id}`
             .toLowerCase()
             .includes(q.toLowerCase())
         )
@@ -40,10 +50,21 @@ export default function RefundRequests() {
         if (status !== "All" && r.status !== status.toLowerCase()) return false;
         return true;
       }),
-    [q, status],
+    [q, status, refundRequests],
   );
 
-  const totalAmount = filtered.reduce((s, r) => s + r.amount, 0);
+  const totalAmount = filtered.reduce((s, r) => s + r.refundAmountBirr, 0);
+
+  const reviewRefundMutation = useMutation({
+    mutationFn: ({ refundRequestId, data }) =>
+      admin.reviewRefund({ refundRequestId, data }),
+    onSuccess: () => {
+      queryClient.invalidateQueries(["admin-refund-requests"]);
+      setActive(null);
+      setNote("");
+      setForce(false);
+    },
+  });
 
   return (
     <>
@@ -144,34 +165,36 @@ export default function RefundRequests() {
                 <tbody>
                   {filtered.map((r, i) => (
                     <motion.tr
-                      key={r.id}
+                      key={r._id}
                       initial={{ opacity: 0, x: -8 }}
                       animate={{ opacity: 1, x: 0 }}
                       transition={{ delay: i * 0.04 }}
                       className="hover:bg-base-200/60"
                     >
                       <td>
-                        <p className="font-semibold text-sm">{r.investor}</p>
+                        <p className="font-semibold text-sm">
+                          {r.investor?.firstName} {r.investor?.lastName}
+                        </p>
                         <p className="font-mono text-muted-foreground text-xs">
-                          {r.id}
+                          {r._id}
                         </p>
                       </td>
                       <td className="hidden md:table-cell text-sm">
-                        <p className="font-medium">{r.listing}</p>
+                        <p className="font-medium">{r.listing?.pitchTitle}</p>
                         <p className="text-muted-foreground text-xs">
-                          {r.farmer}
+                          {r.farmer?.firstName} {r.farmer?.lastName}
                         </p>
                       </td>
                       <td>
                         <p className="font-bold tabular-nums text-sm">
-                          {formatETB(r.amount)}
+                          {formatETB(r.refundAmountBirr)}
                         </p>
                         <p className="text-[11px] text-muted-foreground">
-                          {r.shares} shares
+                          {r.sharesCount} shares
                         </p>
                       </td>
                       <td className="hidden lg:table-cell text-muted-foreground text-sm">
-                        {r.requestedAt}
+                        {new Date(r.createdAt).toLocaleDateString()}
                       </td>
                       <td>
                         <StatusBadge status={r.status} />
@@ -183,18 +206,6 @@ export default function RefundRequests() {
                             className="btn btn-ghost btn-xs btn-square"
                           >
                             <Eye className="w-3.5 h-3.5" />
-                          </button>
-                          <button
-                            onClick={() => setActive(r)}
-                            className="hidden sm:inline-flex gap-1 normal-case btn btn-success btn-xs"
-                          >
-                            <CheckCircle2 className="w-3.5 h-3.5" /> Approve
-                          </button>
-                          <button
-                            onClick={() => setActive(r)}
-                            className="hidden sm:inline-flex gap-1 btn-outline normal-case btn btn-error btn-xs"
-                          >
-                            <XCircle className="w-3.5 h-3.5" /> Reject
                           </button>
                         </div>
                       </td>
@@ -213,6 +224,7 @@ export default function RefundRequests() {
         setNote={setNote}
         force={force}
         setForce={setForce}
+        reviewRefundMutation={reviewRefundMutation}
       />
     </>
   );

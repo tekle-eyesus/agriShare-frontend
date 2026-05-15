@@ -6,7 +6,11 @@ function Loader({ isGlobal = false }) {
     <div
       className={`${isGlobal ? "h-screen z-50" : "h-full z-10"} flex justify-center items-center`}
     >
-      {isGlobal ? <BarLoader /> : <PulseLoader />}
+      {isGlobal ? (
+        <BarLoader color="#008236" />
+      ) : (
+        <PulseLoader color="#008236" />
+      )}
     </div>
   );
 }

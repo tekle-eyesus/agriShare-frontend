@@ -1,88 +1,88 @@
-import { Routes, Route } from "react-router-dom";
-import { AppShell } from "./components/layout/AppShell";
-import Login from "./pages/auth/Login";
-// import ChangeTempPassword from "./pages/auth/ChangeTempPassword";
-// import OTPVerification from "./pages/auth/OTPVerification";
-// import ResetPassword from "./pages/auth/ResetPassword";
-import SendResetOTP from "./pages/auth/SendResetOTP";
+import { Routes, Route, Navigate } from "react-router-dom";
+import { lazy } from "react";
+import { useEffect } from "react";
+import { useAuthStore } from "./store/useAuth";
 
-import Home from "./pages/Home";
-import NotFound from "./pages/global/NotFound";
-import Dashboard from "./pages/farmer/Dashboard";
-import AdminDashboard from "./pages/admin/Dashboard";
-import InvestorDashboard from "./pages/investor/Dashboard";
-import InvestorProfile from "./pages/investor/Profile";
-import InvestorDistributions from "./pages/investor/Distributions";
-import MarketPlace from "./pages/investor/MarketPlace";
-import InvestorListingDetail from "./pages/investor/ListingDetail";
-import Investments from "./pages/investor/MyInvestments";
-import InvestorReview from "./pages/investor/MyReviews";
-import InvestorNotifications from "./pages/investor/Notifications";
-import InvestorRefundRequests from "./pages/investor/Refunds";
-import Wallet from "./pages/investor/WalletPage";
+const Loader = lazy(() => import("./components/ui/Loader"));
+const UserRoutes = lazy(() => import("./routes/User.routes"));
+const Landing = lazy(() => import("./pages/Home"));
+const FarmerVerification = lazy(() => import("./pages/farmer/Verification"));
+const NotFound = lazy(() => import("./pages/global/NotFound"));
+//TODO: for users who does not verify their email navigate the to the Verification page
+const Login = lazy(() => import("./pages/auth/Login"));
+const Signup = lazy(() => import("./pages/auth/Signup"));
+//TODO: since we don't use temp password then we can use it for the forget pass
+const ChangeTempPassword = lazy(
+  () => import("./pages/auth/ChangeTempPassword"),
+);
+//TODO: make sure it is only valid for users that are not verified and the checkAuth returns null
+const OTPVerification = lazy(() => import("./pages/auth/OTPVerification"));
+//TODO: also for this make sure we have a way of sending a reset code at the moment we only have verification OTP for signup
+const SendResetOTP = lazy(() => import("./pages/auth/SendResetOTP"));
+// const ResetPassword = lazy(() => import("./pages/auth/ResetPassword"));
 
-import Assets from "./pages/farmer/Assets";
-import Listings from "./pages/farmer/Listings";
-import ListingDetail from "./pages/farmer/ListingDetail";
-import UserManagement from "./pages/admin/UserManagement";
-import AssetVerifications from "./pages/admin/AssetVerification";
-import FarmerVerifications from "./pages/admin/FarmerVerification";
-import Analytics from "./pages/admin/Analytics";
-import Operations from "./pages/admin/Operations";
-import RefundRequests from "./pages/admin/RefundRequests";
-import RiskMonitor from "./pages/admin/RiskMonitor";
-import SystemLogs from "./pages/admin/SystemLogs";
-import AppLayout from "./components/layout/AppLayout";
-
+//TODO: 🌩️🌩️make shared and modal components see if they are similar across and reuse them
+//TODO: prepare a reusable pagination for all the pages that needs it
 function App() {
+  const { authUser, isCheckingAuth, checkAuth } = useAuthStore();
+
+  useEffect(() => {
+    checkAuth();
+  }, [checkAuth]);
+
+  const user = authUser;
+  const isLoaded = !isCheckingAuth;
+  const isSignedIn = !!authUser;
+  const userRole = user?.role;
+  const getRootRedirect = () => {
+    if (!isLoaded) return <Loader isFullPage={true} />;
+    if (!isSignedIn) return <Navigate to="/login" replace />;
+    if (userRole === "farmer" && user.verificationStatus !== "verified") {
+      return <Navigate to="/verification" replace />;
+    }
+    return <Navigate to={`/${userRole}`} replace />;
+  };
   return (
     <Routes>
-      <Route index element={<Home />} />
-      {/* <Route path="/change-password" element={<ChangeTempPassword />} />
-        <Route path="/otp-verification" element={<OTPVerification />} />
-        <Route path="/reset-password" element={<ResetPassword />} /> */}
+      <Route index element={getRootRedirect()} />
+      <Route
+        path="/landing"
+        element={isSignedIn ? <Navigate to="/" replace /> : <Landing />}
+      />
+      <Route
+        path="/verification"
+        element={
+          userRole === "farmer" && user.verificationStatus !== "verified" ? (
+            <FarmerVerification />
+          ) : (
+            <Navigate to="/" replace />
+          )
+        }
+      />
+      <Route
+        path="/login"
+        element={isSignedIn ? <Navigate to="/" replace /> : <Login />}
+      />
+      <Route
+        path="/signup"
+        element={isSignedIn ? <Navigate to="/" replace /> : <Signup />}
+      />
+      <Route path="/change-password" element={<ChangeTempPassword />} />
+      <Route path="/otp-verification" element={<OTPVerification />} />
+      {/* <Route path="/reset-password" element={<ResetPassword />} /> */}
       <Route path="/send-reset-OTP" element={<SendResetOTP />} />
-      <Route path="/login" element={<Login />} />
-      <Route element={<AppLayout />}>
-        <Route path="/investor/dashboard" element={<InvestorDashboard />} />
-        <Route path="/investor/profile" element={<InvestorProfile />} />
-        <Route
-          path="/investor/distributions"
-          element={<InvestorDistributions />}
-        />
-        <Route path="/investor/marketplace" element={<MarketPlace />} />
-        <Route
-          path="/investor/listing/:id"
-          element={<InvestorListingDetail />}
-        />
-        <Route path="/investor/investments" element={<Investments />} />
-        <Route path="/investor/reviews" element={<InvestorReview />} />
-        <Route
-          path="/investor/notifications"
-          element={<InvestorNotifications />}
-        />
-        <Route path="/investor/refunds" element={<InvestorRefundRequests />} />
-        <Route path="/investor/wallet" element={<Wallet />} />
-        <Route path="/farmer/dashboard" element={<Dashboard />} />
-        <Route path="/admin/dashboard" element={<AdminDashboard />} />
-        <Route path="/admin/users" element={<UserManagement />} />
-        <Route
-          path="/admin/asset-verification"
-          element={<AssetVerifications />}
-        />
-        <Route
-          path="/admin/farmer-verification"
-          element={<FarmerVerifications />}
-        />
-        <Route path="/admin/analytics" element={<Analytics />} />
-        <Route path="/admin/operations" element={<Operations />} />
-        <Route path="/admin/refund-requests" element={<RefundRequests />} />
-        <Route path="/admin/risk-monitor" element={<RiskMonitor />} />
-        <Route path="/admin/system-logs" element={<SystemLogs />} />
-        <Route path="/assets" element={<Assets />} />
-        <Route path="/listings" element={<Listings />} />
-        <Route path="/listings/:id" element={<ListingDetail />} />
-      </Route>
+      <Route
+        path="/*"
+        element={
+          !isLoaded ? (
+            <Loader isFullPage={true} />
+          ) : isSignedIn ? (
+            <UserRoutes />
+          ) : (
+            <Navigate to="/landing" replace />
+          )
+        }
+      />
       <Route path="*" element={<NotFound />} />
     </Routes>
   );

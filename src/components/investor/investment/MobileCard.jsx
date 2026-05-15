@@ -1,5 +1,5 @@
 import { formatETB } from "../../../utils/format";
-import { Card, StatusBadge } from "../shared";
+import { Card, StatusBadge } from "../Shared";
 import Box from "./Box";
 
 function MobileCard({ filtered, setOpen }) {
@@ -23,7 +23,7 @@ function MobileCard({ filtered, setOpen }) {
           </div>
           <button
             onClick={() => setOpen(i)}
-            className="mt-3 btn-outline w-full btn btn-sm"
+            className="mt-3 border btn-outline w-full btn btn-sm"
           >
             View details
           </button>

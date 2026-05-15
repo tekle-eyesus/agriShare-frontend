@@ -6,6 +6,7 @@ import { io } from "socket.io-client";
 
 const API_BASE_URL = import.meta.env.VITE_API_URL;
 
+//TODO: we have to rethrow errors in the catch
 export const useAuthStore = create((set, get) => ({
   authUser: null,
   onlineUsers: [],
@@ -17,8 +18,8 @@ export const useAuthStore = create((set, get) => ({
   checkAuth: async () => {
     try {
       const res = await authApi().getAuthenticatedUser();
-      set({ authUser: res });
-      get().connectSocket();
+      set({ authUser: res?.data?.user });
+      // get().connectSocket();
     } catch (error) {
       console.log(error);
       set({ authUser: null });
@@ -29,12 +30,10 @@ export const useAuthStore = create((set, get) => ({
   signup: async (data) => {
     set({ isSigningUp: true });
     try {
-      const res = await authApi().register(data);
-      set({ authUser: res });
-      toast.success("Account created successfully");
-      get().connectSocket();
+      const res = await authApi().signup(data);
     } catch (error) {
       toast.error(error.message);
+      throw new Error(error.message || "Something went wrong");
     } finally {
       set({ isSigningUp: false });
     }
@@ -43,11 +42,13 @@ export const useAuthStore = create((set, get) => ({
     set({ isloggingin: true });
     try {
       const res = await authApi().login(data);
-      set({ authUser: res });
-      toast.success("Logged in successfully");
-      get().connectSocket();
+      set({ authUser: res?.data?.user });
+      // get().connectSocket();
     } catch (error) {
       toast.error(error.message);
+      let newError = new Error(error.message);
+      newError.email = data.email;
+      throw newError;
     } finally {
       set({ isloggingin: false });
     }
@@ -56,17 +57,36 @@ export const useAuthStore = create((set, get) => ({
     try {
       await authApi().logout();
       set({ authUser: null });
-      toast.success("Logged out successfully");
-      get().disconnectSocket();
+      window.location.assign("/login");
+      // get().disconnectSocket();
     } catch (error) {
       toast.error(error.message);
+    }
+  },
+  verifyEmail: async (data) => {
+    try {
+      const res = await authApi().verifyEmail(data);
+      set({ authUser: res?.data?.user });
+      return res;
+    } catch (error) {
+      toast.error(error.message);
+      throw error;
+    }
+  },
+  resendOTP: async (data) => {
+    try {
+      const res = await authApi().resendOTP(data);
+      return res;
+    } catch (error) {
+      toast.error(error.message);
+      throw error;
     }
   },
   updateProfile: async (data) => {
     set({ isUpdatingProfile: true });
     try {
       const res = await commonApi().updateProfile(data);
-      set({ authUser: res });
+      set({ authUser: res?.data?.user });
       toast.success("Profile updated successfully");
     } catch (error) {
       toast.error(error.message);

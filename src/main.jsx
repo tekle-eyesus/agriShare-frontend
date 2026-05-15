@@ -6,6 +6,7 @@ import "./index.css";
 import { ErrorBoundary } from "react-error-boundary";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import GlobalErrorPage from "./pages/global/GlobalError";
+import { Toaster } from "react-hot-toast";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -23,15 +24,18 @@ const queryClient = new QueryClient({
 
 ReactDOM.createRoot(document.getElementById("root")).render(
   <React.StrictMode>
-    <BrowserRouter>
-      <QueryClientProvider client={queryClient}>
-        <ErrorBoundary
-          onReset={() => window.location.reload()}
-          FallbackComponent={GlobalErrorPage}
-        >
-          <App />
-        </ErrorBoundary>
-      </QueryClientProvider>
-    </BrowserRouter>
+    <>
+      <Toaster position="top-right" />
+      <BrowserRouter>
+        <QueryClientProvider client={queryClient}>
+          <ErrorBoundary
+            onReset={() => window.location.reload()}
+            FallbackComponent={GlobalErrorPage}
+          >
+            <App />
+          </ErrorBoundary>
+        </QueryClientProvider>
+      </BrowserRouter>
+    </>
   </React.StrictMode>,
 );

@@ -2,6 +2,7 @@ import { motion } from "framer-motion";
 import { itemUp } from "../../../utils/motionVariants";
 
 function QueueAlertCard({ title, count, color, icon: Icon, href }) {
+  if (count === 0) return null;
   return (
     <motion.a
       href={href}
@@ -16,7 +17,7 @@ function QueueAlertCard({ title, count, color, icon: Icon, href }) {
         <p className="font-semibold text-sm truncate">{title}</p>
         <p className="text-muted-foreground text-xs">Tap to review</p>
       </div>
-      <span className="bg-primary border-0 font-bold text-primary-content badge badge-lg">
+      <span className="bg-primary border-0 rounded-full size-8 font-bold text-primary-content badge badge-lg shrink-0">
         {count}
       </span>
     </motion.a>

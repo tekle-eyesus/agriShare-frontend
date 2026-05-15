@@ -13,6 +13,8 @@ import { LISTINGS } from "../../mock-data/investor/data";
 import QuickView from "../../components/investor/marketplace/QuickView";
 import Listing from "../../components/investor/marketplace/Listing";
 import FiltersPanel from "../../components/investor/marketplace/FiltersPanel";
+import { useAPI } from "../../hook/useApi";
+import { useQuery } from "@tanstack/react-query";
 const SORTS = ["Newest", "Popular", "Highest ROI", "Ending soon"];
 
 export default function Marketplace() {
@@ -30,6 +32,15 @@ export default function Marketplace() {
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [quickView, setQuickView] = useState(null);
   const [shares, setShares] = useState(1);
+
+  const { common } = useAPI();
+
+  const { data: activeListings } = useQuery({
+    queryKey: ["active-listings"],
+    queryFn: () => common.getActiveListings(),
+  });
+
+  console.log(activeListings);
 
   const filtered = useMemo(() => {
     let arr = LISTINGS.filter((l) => {
@@ -95,7 +106,7 @@ export default function Marketplace() {
               ))}
             </select>
             <button
-              className="lg:hidden gap-2 btn-outline btn btn-sm"
+              className="lg:hidden gap-2 border btn-outline btn btn-sm"
               onClick={() => setFiltersOpen(true)}
             >
               <SlidersHorizontal className="w-4 h-4" /> Filters

@@ -22,11 +22,15 @@ function FiltersPanel({
           Asset type
         </label>
         <div className="mt-2 w-full join">
-          {["All", "Farmland", "Livestock"].map((t) => (
+          {["All", "Farmland", "Livestock"].map((t, i) => (
             <button
               key={t}
               onClick={() => setType(t)}
-              className={`join-item btn btn-sm flex-1 ${type === t ? "btn-primary" : "btn-outline"}`}
+              className={`
+        join-item btn btn-sm flex-1 border
+        ${type === t ? "btn-primary" : "btn-outline"}
+        ${i !== 0 ? "border-l-0" : ""}
+      `}
             >
               {t}
             </button>
@@ -106,7 +110,10 @@ function FiltersPanel({
         </div>
       </div>
       <div className="flex gap-2 pt-2">
-        <button onClick={reset} className="flex-1 btn-outline btn btn-sm">
+        <button
+          onClick={reset}
+          className="flex-1 border btn-outline btn btn-sm"
+        >
           Reset
         </button>
         <button

@@ -1,5 +1,5 @@
 import { BadgeCheck } from "lucide-react";
-import { Card, StatusBadge } from "../Shared";
+import { Card, StatusBadge } from "../../investor/Shared";
 
 function KYCSection() {
   return (

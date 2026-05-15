@@ -1,14 +1,6 @@
 import { motion } from "framer-motion";
 import { useMemo, useState } from "react";
-import {
-  Search,
-  Filter,
-  Eye,
-  CheckCircle2,
-  XCircle,
-  Sprout,
-  Beef,
-} from "lucide-react";
+import { Search, Filter, Eye, Sprout, Beef } from "lucide-react";
 import {
   PageHeader,
   StatusBadge,
@@ -16,7 +8,8 @@ import {
   EmptyState,
 } from "../../components/admin/shared";
 import VerificationModal from "../../components/admin/asset-verification/VerificationModal";
-import { PENDING_ASSETS } from "../../mock-data/admin/data";
+import { useAPI } from "../../hook/useApi";
+import { useSuspenseQuery } from "@tanstack/react-query";
 
 export default function AssetVerifications() {
   const [q, setQ] = useState("");
@@ -24,20 +17,34 @@ export default function AssetVerifications() {
   const [region, setRegion] = useState("All");
   const [active, setActive] = useState(null);
   const [comment, setComment] = useState("");
+  const { admin } = useAPI();
+  const { data: { data } = {} } = useSuspenseQuery({
+    queryKey: ["pending-assets"],
+    queryFn: () => admin.getPendingAssets(),
+  });
+
+  const assets = data?.assets || [];
 
   const filtered = useMemo(
     () =>
-      PENDING_ASSETS.filter((a) => {
+      (assets || []).filter((a) => {
         if (
           q &&
-          !`${a.name} ${a.farmer}`.toLowerCase().includes(q.toLowerCase())
+          !`${a.name} ${a.farmer?.email || a.farmer?.phone || ""}`
+            .toLowerCase()
+            .includes(q.toLowerCase())
         )
           return false;
-        if (type !== "All" && a.type !== type) return false;
-        if (region !== "All" && a.region !== region) return false;
+        if (type !== "All" && a.type.toLowerCase() !== type.toLowerCase())
+          return false;
+        if (
+          region !== "All" &&
+          a.location?.region?.toLowerCase() !== region.toLowerCase()
+        )
+          return false;
         return true;
       }),
-    [q, type, region],
+    [q, type, region, assets],
   );
 
   return (
@@ -46,7 +53,7 @@ export default function AssetVerifications() {
         title="Asset Verifications"
         subtitle="Verify farmland boundaries, livestock counts, and supporting documentation."
         actions={
-          <span className="font-semibold badge badge-warning badge-lg">
+          <span className="p-2 font-semibold text-sm! badge badge-warning badge-md">
             {filtered.filter((a) => a.status === "pending").length} pending
           </span>
         }
@@ -119,37 +126,39 @@ export default function AssetVerifications() {
                   <tr>
                     <th>Asset</th>
                     <th className="hidden md:table-cell">Type</th>
-                    <th className="hidden lg:table-cell">Farmer</th>
+                    {/* <th className="hidden lg:table-cell">Farmer</th> */}
                     <th className="hidden lg:table-cell">Location</th>
                     <th className="hidden xl:table-cell">Submitted</th>
                     <th>Status</th>
-                    <th className="text-right">Actions</th>
+                    {/* <th className="text-right">Actions</th> */}
                   </tr>
                 </thead>
                 <tbody>
                   {filtered.map((a, i) => (
                     <motion.tr
-                      key={a.id}
+                      key={a._id}
                       initial={{ opacity: 0, x: -8 }}
                       animate={{ opacity: 1, x: 0 }}
                       transition={{ delay: i * 0.03 }}
-                      className="hover:bg-base-200/60"
+                      className="hover:bg-base-200/60 cursor-pointer"
+                      onClick={() => setActive(a)}
                     >
                       <td>
                         <div className="flex items-center gap-3">
                           <div
-                            className={`w-10 h-10 rounded-xl grid place-items-center ${a.type === "Farmland" ? "bg-success/10 text-success" : "bg-info/10 text-info"}`}
+                            className={`w-10 overflow-hidden h-10 rounded-xl grid place-items-center ${a.type === "farmland" ? "bg-success/10 text-success" : "bg-info/10 text-info"}`}
                           >
-                            {a.type === "Farmland" ? (
-                              <Sprout className="w-5 h-5" />
-                            ) : (
-                              <Beef className="w-5 h-5" />
-                            )}
+                            {/* <Beef className="w-5 h-5" /> */}
+                            <img
+                              src={a?.photos[0].url}
+                              alt=""
+                              className="w-full h-full object-cover"
+                            />
                           </div>
                           <div>
                             <p className="font-semibold text-sm">{a.name}</p>
                             <p className="font-mono text-[11px] text-muted-foreground">
-                              {a.id}
+                              {a._id}
                             </p>
                           </div>
                         </div>
@@ -157,34 +166,28 @@ export default function AssetVerifications() {
                       <td className="hidden md:table-cell">
                         <StatusBadge status={a.type} />
                       </td>
+                      {/* <td className="hidden lg:table-cell text-sm">
+                        {a.farmer?.email || a.farmer?.phone || "N/A"}
+                      </td> */}
                       <td className="hidden lg:table-cell text-sm">
-                        {a.farmer}
-                      </td>
-                      <td className="hidden lg:table-cell text-sm">
-                        {a.region}
+                        {a.location?.region || "N/A"}
                       </td>
                       <td className="hidden xl:table-cell text-muted-foreground text-sm">
-                        {a.submittedAt}
+                        {new Date(a.createdAt).toLocaleDateString()}
                       </td>
                       <td>
                         <StatusBadge status={a.status} />
                       </td>
-                      <td>
-                        <div className="flex justify-end gap-1">
+                      {/* <td>
+                        <div className="flex justify-center gap-1 ml-4">
                           <button
                             onClick={() => setActive(a)}
                             className="btn btn-ghost btn-xs btn-square"
                           >
                             <Eye className="w-3.5 h-3.5" />
                           </button>
-                          <button className="hidden sm:inline-flex gap-1 normal-case btn btn-success btn-xs">
-                            <CheckCircle2 className="w-3.5 h-3.5" /> Approve
-                          </button>
-                          <button className="hidden sm:inline-flex gap-1 btn-outline normal-case btn btn-error btn-xs">
-                            <XCircle className="w-3.5 h-3.5" /> Reject
-                          </button>
                         </div>
-                      </td>
+                      </td> */}
                     </motion.tr>
                   ))}
                 </tbody>

@@ -1,104 +1,269 @@
 @import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Poppins:wght@400;500;600;700;800&display=swap");
 
 @import "tailwindcss";
-@plugin "daisyui";
 
-@theme {
-  --font-sans: "Inter", sans-serif;
-  --font-display: "Poppins", sans-serif;
-
-  --radius-box: 0.75rem;
-  --radius-field: 0.75rem;
-  --radius-selector: 0.75rem;
-
-  --color-primary: #2e7d32;
-  --color-primary-content: #ffffff;
-
-  --color-secondary: #f1f5f9;
-  --color-secondary-content: #0f172a;
-
-  --color-accent: #6b21a8;
-  --color-accent-content: #ffffff;
-
-  --color-neutral: #1e293b;
-  --color-neutral-content: #ffffff;
-
-  --color-base-100: #ffffff;
-  --color-base-200: #f8fafc;
-  --color-base-300: #e2e8f0;
-  --color-base-content: #0f172a;
-
-  --color-info: #2196f3;
-  --color-success: #4caf50;
-  --color-warning: #ff9800;
-  --color-error: #ef4444;
-
-  --shadow-card:
-    0 1px 3px rgb(226 232 240 / 0.4), 0 1px 2px rgb(226 232 240 / 0.2);
-
-  --shadow-elevated: 0 10px 30px -10px rgb(46 125 50 / 0.15);
-
-  --shadow-glow: 0 0 40px rgb(76 175 80 / 0.25);
-
-  --gradient-primary: linear-gradient(135deg, #2e7d32, #4caf50);
-  --gradient-accent: linear-gradient(135deg, #6b21a8, #9333ea);
-  --gradient-soft: linear-gradient(180deg, #ffffff, #f8fafc);
+/* ───── DaisyUI v5 (CSS-first) ───── */
+@plugin "daisyui" {
+  themes: false;
+  root: ":root";
+  include:;
+  exclude:;
+  prefix:;
+  logs: false;
 }
 
 @plugin "daisyui/theme" {
-  name: "light";
+  name: "agrishare-light";
   default: true;
   prefersdark: false;
   color-scheme: light;
 
+  --color-base-100: #ffffff;
+  --color-base-200: #f9fafb;
+  --color-base-300: #e5e7eb;
+  --color-base-content: #1f2937;
   --color-primary: #2e7d32;
   --color-primary-content: #ffffff;
-
-  --color-secondary: #f1f5f9;
-  --color-secondary-content: #0f172a;
-
+  --color-secondary: #4caf50;
+  --color-secondary-content: #ffffff;
   --color-accent: #6b21a8;
   --color-accent-content: #ffffff;
-
-  --color-neutral: #1e293b;
+  --color-neutral: #1f2937;
   --color-neutral-content: #ffffff;
-
-  --color-base-100: #ffffff;
-  --color-base-200: #f8fafc;
-  --color-base-300: #e2e8f0;
-  --color-base-content: #0f172a;
-
   --color-info: #2196f3;
-  --color-success: #4caf50;
+  --color-info-content: #ffffff;
+  --color-success: #2e7d32;
+  --color-success-content: #ffffff;
   --color-warning: #ff9800;
-  --color-error: #ef4444;
+  --color-warning-content: #ffffff;
+  --color-error: #f44336;
+  --color-error-content: #ffffff;
 
-  --radius-box: 0.75rem;
-  --radius-field: 0.75rem;
   --radius-selector: 0.75rem;
+  --radius-field: 0.5rem;
+  --radius-box: 0.75rem;
 }
 
-@layer base {
-  * {
-    @apply border-base-300;
-  }
+@plugin "daisyui/theme" {
+  name: "agrishare-dark";
+  default: false;
+  prefersdark: true;
+  color-scheme: dark;
 
+  --color-base-100: #0f1115;
+  --color-base-200: #161a21;
+  --color-base-300: #232832;
+  --color-base-content: #e7eaf0;
+  --color-primary: #4caf50;
+  --color-primary-content: #06170a;
+  --color-secondary: #2e7d32;
+  --color-secondary-content: #ffffff;
+  --color-accent: #a855f7;
+  --color-accent-content: #1a0a2e;
+  --color-neutral: #0b0d11;
+  --color-neutral-content: #e7eaf0;
+  --color-info: #38bdf8;
+  --color-info-content: #06141d;
+  --color-success: #22c55e;
+  --color-success-content: #052e10;
+  --color-warning: #fbbf24;
+  --color-warning-content: #2a1c00;
+  --color-error: #ef4444;
+  --color-error-content: #2a0606;
+
+  --radius-selector: 0.75rem;
+  --radius-field: 0.5rem;
+  --radius-box: 0.75rem;
+}
+
+/* Class-based dark variant (for our zustand toggle via data-theme + html.dark) */
+@custom-variant dark (&:where([data-theme="agrishare-dark"], [data-theme="agrishare-dark"] *));
+
+/* ───── Design tokens (preserved for legacy shadcn-style utilities) ───── */
+:root {
+  --background: 0 0% 100%;
+  --foreground: 222 47% 11%;
+
+  --card: 0 0% 100%;
+  --card-foreground: 222 47% 11%;
+
+  --popover: 0 0% 100%;
+  --popover-foreground: 222 47% 11%;
+
+  --primary: 123 46% 34%;
+  --primary-foreground: 0 0% 100%;
+  --primary-glow: 123 41% 49%;
+
+  --secondary: 210 40% 96%;
+  --secondary-foreground: 222 47% 11%;
+
+  --muted: 210 40% 96%;
+  --muted-foreground: 215 16% 47%;
+
+  --accent: 271 68% 39%;
+  --accent-foreground: 0 0% 100%;
+
+  --destructive: 0 89% 60%;
+  --destructive-foreground: 0 0% 100%;
+
+  --warning: 33 100% 50%;
+  --info: 207 90% 54%;
+
+  --border: 220 13% 91%;
+  --input: 220 13% 91%;
+  --ring: 123 46% 34%;
+
+  --radius: 0.75rem;
+
+  --sidebar-bg: 0 0% 100%;
+  --sidebar-fg: 222 47% 11%;
+  --sidebar-accent: 123 46% 34%;
+
+  --gradient-primary: linear-gradient(
+    135deg,
+    hsl(123 46% 34%),
+    hsl(123 41% 49%)
+  );
+  --gradient-accent: linear-gradient(
+    135deg,
+    hsl(271 68% 39%),
+    hsl(280 65% 55%)
+  );
+  --gradient-soft: linear-gradient(180deg, hsl(0 0% 100%), hsl(210 40% 98%));
+  --shadow-card:
+    0 1px 3px hsl(220 13% 91% / 0.4), 0 1px 2px hsl(220 13% 91% / 0.2);
+  --shadow-elevated: 0 10px 30px -10px hsl(123 46% 34% / 0.15);
+  --shadow-glow: 0 0 40px hsl(123 41% 49% / 0.25);
+}
+
+[data-theme="agrishare-dark"] {
+  --background: 222 30% 7%;
+  --foreground: 210 20% 92%;
+
+  --card: 222 26% 10%;
+  --card-foreground: 210 20% 92%;
+
+  --popover: 222 26% 10%;
+  --popover-foreground: 210 20% 92%;
+
+  --primary: 123 41% 49%;
+  --primary-foreground: 222 30% 7%;
+  --primary-glow: 123 41% 60%;
+
+  --secondary: 222 18% 16%;
+  --secondary-foreground: 210 20% 92%;
+
+  --muted: 222 18% 16%;
+  --muted-foreground: 215 14% 65%;
+
+  --accent: 271 68% 60%;
+  --accent-foreground: 0 0% 100%;
+
+  --destructive: 0 70% 55%;
+  --destructive-foreground: 0 0% 100%;
+
+  --border: 222 18% 20%;
+  --input: 222 18% 20%;
+  --ring: 123 41% 49%;
+
+  --sidebar-bg: 222 26% 10%;
+  --sidebar-fg: 210 20% 92%;
+  --sidebar-accent: 123 41% 49%;
+}
+
+/* ───── Tailwind v4 @theme: bridge tokens to color-* utilities (bg-background, border-border, etc.) ───── */
+@theme inline {
+  --font-sans: "Inter", system-ui, sans-serif;
+  --font-display: "Poppins", "Inter", sans-serif;
+
+  --color-border: hsl(var(--border));
+  --color-input: hsl(var(--input));
+  --color-ring: hsl(var(--ring));
+  --color-background: hsl(var(--background));
+  --color-foreground: hsl(var(--foreground));
+
+  --color-primary: hsl(var(--primary));
+  --color-primary-foreground: hsl(var(--primary-foreground));
+
+  --color-secondary: hsl(var(--secondary));
+  --color-secondary-foreground: hsl(var(--secondary-foreground));
+
+  --color-destructive: hsl(var(--destructive));
+  --color-destructive-foreground: hsl(var(--destructive-foreground));
+
+  --color-muted: hsl(var(--muted));
+  --color-muted-foreground: hsl(var(--muted-foreground));
+
+  --color-accent: hsl(var(--accent));
+  --color-accent-foreground: hsl(var(--accent-foreground));
+
+  --color-popover: hsl(var(--popover));
+  --color-popover-foreground: hsl(var(--popover-foreground));
+
+  --color-card: hsl(var(--card));
+  --color-card-foreground: hsl(var(--card-foreground));
+
+  --radius-lg: var(--radius);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-sm: calc(var(--radius) - 4px);
+
+  --animate-fade-in: fade-in 0.4s ease-out;
+  --animate-accordion-down: accordion-down 0.2s ease-out;
+  --animate-accordion-up: accordion-up 0.2s ease-out;
+}
+
+@keyframes fade-in {
+  0% {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+@keyframes accordion-down {
+  from {
+    height: 0;
+  }
+  to {
+    height: var(--radix-accordion-content-height);
+  }
+}
+@keyframes accordion-up {
+  from {
+    height: var(--radix-accordion-content-height);
+  }
+  to {
+    height: 0;
+  }
+}
+
+/* Tailwind v4 changed default border color — keep v3 behavior */
+@layer base {
+  *,
+  ::after,
+  ::before {
+    border-color: hsl(var(--border));
+  }
   html,
   body,
   #root {
     height: 100%;
   }
-
   body {
-    @apply bg-base-100 font-sans text-base-content antialiased;
+    background-color: hsl(var(--background));
+    color: hsl(var(--foreground));
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
     font-feature-settings: "cv02", "cv03", "cv04", "cv11";
   }
-
   h1,
   h2,
   h3,
   h4 {
-    @apply font-display tracking-tight;
+    font-family: var(--font-display);
+    letter-spacing: -0.02em;
   }
 }
 
@@ -106,33 +271,33 @@
   .gradient-primary {
     background: var(--gradient-primary);
   }
-
   .gradient-accent {
     background: var(--gradient-accent);
   }
-
-  .gradient-soft {
-    background: var(--gradient-soft);
-  }
-
   .shadow-card {
     box-shadow: var(--shadow-card);
   }
-
   .shadow-elevated {
     box-shadow: var(--shadow-elevated);
   }
-
   .shadow-glow {
     box-shadow: var(--shadow-glow);
   }
-
   .scrollbar-thin::-webkit-scrollbar {
     width: 6px;
     height: 6px;
   }
-
   .scrollbar-thin::-webkit-scrollbar-thumb {
-    @apply bg-base-300 rounded-full;
+    background-color: hsl(var(--border));
+    border-radius: 9999px;
+  }
+
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
   }
 }

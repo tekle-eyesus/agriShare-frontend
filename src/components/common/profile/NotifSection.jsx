@@ -1,4 +1,4 @@
-import { Card } from "../Shared";
+import { Card } from "../../investor/Shared";
 
 function NotifSection() {
   const prefs = [

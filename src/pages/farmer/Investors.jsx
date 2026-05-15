@@ -8,6 +8,7 @@ import InvestorDetailModal from "../../components/farmer/investors/InvestorDetai
 import CommunicationSection from "../../components/farmer/investors/CommunicationSection";
 import EmptyState from "../../components/farmer/investors/EmptyState";
 import { mockInvestors } from "../../mock-data/farmer/investor";
+import { staggerContainer } from "../../utils/motionVariants";
 
 export function Investors() {
   const [searchQuery, setSearchQuery] = useState("");

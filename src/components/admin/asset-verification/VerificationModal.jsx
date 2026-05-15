@@ -1,3 +1,4 @@
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import Modal from "../Modal";
 import {
   Sprout,
@@ -8,6 +9,7 @@ import {
   XCircle,
 } from "lucide-react";
 import { StatusBadge } from "../shared";
+import { useAPI } from "../../../hook/useApi";
 
 function Field({ label, value }) {
   return (
@@ -19,8 +21,43 @@ function Field({ label, value }) {
     </div>
   );
 }
-
+//TODO: finish the asset rejection and approval flow
 function VerificationModal({ active, comment, setActive, setComment }) {
+  console.log(active);
+  const { admin } = useAPI();
+  const queryClient = useQueryClient();
+
+  const verifyAssetMutation = useMutation({
+    mutationFn: (data) =>
+      admin.verifyAsset({ assetId: data.id, data: data.body }),
+    onSuccess: () => {
+      queryClient.invalidateQueries(["pending-assets"]);
+      setActive(null);
+      setComment("");
+    },
+    onError: (error) => {
+      console.error("Asset verification failed:", error);
+    },
+  });
+
+  const handleApprove = () => {
+    verifyAssetMutation.mutate({
+      id: active._id,
+      body: { status: "verified", reason: comment || "Asset approved" },
+    });
+  };
+
+  const handleReject = () => {
+    if (!comment.trim()) {
+      alert("Please provide a reason for rejection");
+      return;
+    }
+    verifyAssetMutation.mutate({
+      id: active._id,
+      body: { status: "rejected", reason: comment },
+    });
+  };
+
   return (
     <Modal
       open={!!active}
@@ -32,47 +69,38 @@ function VerificationModal({ active, comment, setActive, setComment }) {
         <div className="space-y-6 p-6">
           <div className="flex sm:flex-row flex-col justify-between sm:items-center gap-3">
             <div className="flex items-center gap-3">
-              <div
-                className={`w-12 h-12 rounded-xl grid place-items-center ${active.type === "Farmland" ? "bg-success/10 text-success" : "bg-info/10 text-info"}`}
-              >
-                {active.type === "Farmland" ? (
-                  <Sprout className="w-6 h-6" />
-                ) : (
-                  <Beef className="w-6 h-6" />
-                )}
+              <div className="place-items-center grid bg-info/10 rounded-xl w-12 h-12 overflow-hidden text-info">
+                {/* <Beef className="w-6 h-6" /> */}
+                <img
+                  src={active?.photos[0]?.url}
+                  alt=""
+                  className="w-full h-full object-cover"
+                />
               </div>
               <div>
                 <h3 className="font-display font-bold text-xl">
                   {active.name}
                 </h3>
                 <p className="text-muted-foreground text-sm">
-                  {active.farmer} • {active.region}
+                  {active.farmer._id} • {active.location.region}
                 </p>
               </div>
             </div>
             <StatusBadge status={active.status} />
           </div>
 
-          <p className="bg-base-200 p-4 rounded-xl text-sm text-base-content/80 leading-relaxed">
-            {active.desc}
-          </p>
+          {/* <p className="bg-base-200 p-4 rounded-xl text-sm text-base-content/80 leading-relaxed">
+            {active?.desc}
+          </p> */}
 
           <div className="gap-3 grid grid-cols-2 sm:grid-cols-4">
-            {active.type === "Farmland" ? (
-              <>
-                <Field label="Size" value={active.size} />
-                <Field label="Soil" value={active.soil} />
-                <Field label="Water" value={active.water} />
-                <Field label="Region" value={active.region} />
-              </>
-            ) : (
-              <>
-                <Field label="Animal" value={active.animal} />
-                <Field label="Breed" value={active.breed} />
-                <Field label="Head count" value={active.count} />
-                <Field label="Region" value={active.region} />
-              </>
-            )}
+            <Field label="Animal" value={active.name} />
+            <Field label="Breed" value={active.livestockDetails.breed} />
+            <Field
+              label="Head count"
+              value={active.livestockDetails.quantity}
+            />
+            {/* <Field label="Region" value={active.livestockDetails.region} /> */}
           </div>
 
           <div>
@@ -80,12 +108,21 @@ function VerificationModal({ active, comment, setActive, setComment }) {
               <ImageIcon className="w-3.5 h-3.5" /> Photo Gallery
             </p>
             <div className="gap-2 grid grid-cols-2 sm:grid-cols-4">
-              {Array.from({ length: 4 }).map((_, i) => (
+              {active.photos?.map((photo, i) => (
                 <div
-                  key={i}
-                  className="place-items-center grid bg-linear-to-br from-primary/10 to-accent/10 border border-base-300 rounded-xl aspect-square"
+                  key={photo._id || i}
+                  className="relative border border-base-300 rounded-xl aspect-square overflow-hidden"
                 >
-                  <ImageIcon className="w-6 h-6 text-muted-foreground/50" />
+                  <img
+                    src={photo.url}
+                    alt={photo.description || `Photo ${i + 1}`}
+                    className="w-full h-full object-cover"
+                  />
+                  <div className="right-0 bottom-0 left-0 absolute bg-black/60 p-2">
+                    <p className="font-semibold text-[10px] text-white text-center truncate">
+                      {photo.description || `Photo ${i + 1}`}
+                    </p>
+                  </div>
                 </div>
               ))}
             </div>
@@ -96,21 +133,23 @@ function VerificationModal({ active, comment, setActive, setComment }) {
               <FileText className="w-3.5 h-3.5" /> Documents
             </p>
             <div className="space-y-2">
-              {[
-                active.type === "Farmland"
-                  ? "Land certificate.pdf"
-                  : "Health certificate.pdf",
-                "Ownership proof.pdf",
-              ].map((name) => (
+              {active.documents?.map((doc, i) => (
                 <div
-                  key={name}
+                  key={doc._id || i}
                   className="flex items-center gap-3 bg-base-200 p-3 rounded-xl"
                 >
                   <FileText className="w-4 h-4 text-muted-foreground" />
-                  <p className="flex-1 font-medium text-sm truncate">{name}</p>
-                  <button className="normal-case btn btn-ghost btn-xs">
+                  <p className="flex-1 font-medium text-sm truncate">
+                    {doc.originalName || `Document ${i + 1}`}
+                  </p>
+                  <a
+                    href={doc.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="normal-case btn btn-ghost btn-xs"
+                  >
                     Preview
-                  </button>
+                  </a>
                 </div>
               ))}
             </div>
@@ -130,11 +169,37 @@ function VerificationModal({ active, comment, setActive, setComment }) {
           </div>
 
           <div className="flex gap-2 pt-2 border-base-300 border-t">
-            <button className="flex-1 gap-2 normal-case btn btn-success">
-              <CheckCircle2 className="w-4 h-4" /> Approve asset
+            <button
+              onClick={handleApprove}
+              disabled={verifyAssetMutation.isPending}
+              className="flex-1 gap-2 normal-case btn btn-success"
+            >
+              {verifyAssetMutation.isPending ? (
+                <>
+                  <div className="border-2 border-white/30 border-t-white rounded-full w-4 h-4 animate-spin" />
+                  Processing...
+                </>
+              ) : (
+                <>
+                  <CheckCircle2 className="w-4 h-4" /> Approve asset
+                </>
+              )}
             </button>
-            <button className="gap-2 btn-outline normal-case btn btn-error">
-              <XCircle className="w-4 h-4" /> Reject
+            <button
+              onClick={handleReject}
+              disabled={verifyAssetMutation.isPending || !comment.trim()}
+              className={`gap-2 btn-outline normal-case btn btn-error ${!comment.trim() ? "btn-disabled cursor-not-allowed" : ""}`}
+            >
+              {verifyAssetMutation.isPending ? (
+                <>
+                  <div className="border-2 border-white/30 border-t-white rounded-full w-4 h-4 animate-spin" />
+                  Processing...
+                </>
+              ) : (
+                <>
+                  <XCircle className="w-4 h-4" /> Reject
+                </>
+              )}
             </button>
           </div>
         </div>
