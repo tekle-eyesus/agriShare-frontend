@@ -23,6 +23,7 @@ const SendResetOTP = lazy(() => import("./pages/auth/SendResetOTP"));
 
 //TODO: 🌩️🌩️make shared and modal components see if they are similar across and reuse them
 //TODO: prepare a reusable pagination for all the pages that needs it
+//TODO: remove all the labels and titles for each page and make the filters fixed and for mobile screens add m/p to the bottom
 function App() {
   const { authUser, isCheckingAuth, checkAuth } = useAuthStore();
 

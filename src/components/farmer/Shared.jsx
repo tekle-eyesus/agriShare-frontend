@@ -38,7 +38,7 @@ export function StatusBadge({ status }) {
   };
   const cls = map[status] || "badge-ghost";
   return (
-    <span className={`badge ${cls} badge-sm font-semibold capitalize`}>
+    <span className={`badge ${cls} badge-sm font-semibold capitalize px-2`}>
       {status}
     </span>
   );

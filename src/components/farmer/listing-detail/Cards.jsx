@@ -1,6 +1,15 @@
 import { motion } from "framer-motion";
 import { fadeInUp } from "../../../utils/motionVariants";
-import { Edit, Trash2, ImageIcon, Calendar } from "lucide-react";
+import {
+  Edit,
+  Trash2,
+  ImageIcon,
+  Calendar,
+  Pencil,
+  XCircle,
+} from "lucide-react";
+import { Card } from "../Shared";
+import { timeAgo } from "../../../utils/format";
 
 export function StatCard({ label, value, icon: Icon, color = "primary" }) {
   return (
@@ -37,6 +46,88 @@ export const FinancialTermCard = ({ label, value }) => {
   );
 };
 
+// export const UpdateC = () => {
+//   return (
+//     <div>
+//       <div className="flex justify-end mb-4">
+//         <button
+//           onClick={() => setPostOpen(true)}
+//           className="gap-2 btn btn-primary btn-sm"
+//         >
+//           <Megaphone className="w-4 h-4" />
+//           Post New Update
+//         </button>
+//       </div>
+//       {listingUpdates.length === 0 ? (
+//         <Card className="p-0" hover={false}>
+//           <EmptyState
+//             title="No updates yet"
+//             message="Post your first update to keep investors engaged."
+//             icon={Megaphone}
+//           />
+//         </Card>
+//       ) : (
+//         <div className="relative">
+//           {listingUpdates.map((u) => (
+//             <UpdateCardModified u={u} setEditingUpdate={setEditingUpdate}/>
+//           ))}
+//         </div>
+//       )}
+//     </div>
+//   );
+// };
+export const UpdateCardModified = ({ u, setEditingUpdate, onDelete }) => {
+  return (
+    <div
+      key={u._id}
+      className="relative pb-6 last:pb-0 pl-5 border-primary/30 border-l-2"
+    >
+      <span className="top-1 -left-[7px] absolute bg-primary rounded-full ring-4 ring-base-100 w-3 h-3" />
+      <Card className="p-5">
+        <div className="flex justify-between items-start gap-3">
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-2 text-muted-foreground text-xs">
+              <Calendar className="w-3 h-3" />
+              <span>{new Date(u.postedAt).toLocaleDateString()}</span>
+              <span>·</span>
+              <span>{timeAgo(u.postedAt)}</span>
+            </div>
+            <p className="mt-1.5 font-display font-bold text-base">{u.title}</p>
+            <p className="mt-2 text-muted-foreground text-sm">{u.body}</p>
+            {u.images && u.images.length > 0 && (
+              <div className="gap-2 grid grid-cols-2 sm:grid-cols-3 mt-3">
+                {u.images.map((img) => (
+                  <img
+                    key={img.url}
+                    src={img.url}
+                    className="bg-base-200 rounded-lg object-cover aspect-video"
+                    alt=""
+                  />
+                ))}
+              </div>
+            )}
+          </div>
+          <div className="flex gap-1 shrink-0">
+            <button
+              onClick={() => setEditingUpdate(u)}
+              className="btn btn-ghost btn-xs btn-square"
+              aria-label="Edit"
+            >
+              <Pencil className="w-3.5 h-3.5" />
+            </button>
+            <button
+              onClick={() => onDelete(u._id)}
+              className="text-error btn btn-ghost btn-xs btn-square"
+              aria-label="Delete"
+            >
+              <XCircle className="w-3.5 h-3.5" />
+            </button>
+          </div>
+        </div>
+      </Card>
+    </div>
+  );
+};
 export const UpdateCard = ({ update, onEdit, onDelete }) => {
   return (
     <motion.div

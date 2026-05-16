@@ -18,7 +18,7 @@ const StatusBadge = ({ status }) => {
     Draft: "badge-warning",
   };
   return (
-    <div className={`badge ${variants[status] || "badge-ghost"} gap-1`}>
+    <div className={`badge ${variants[status] || "badge-ghost"} gap-1 px-2`}>
       {status}
     </div>
   );
@@ -158,33 +158,31 @@ function ListingCard({ listing }) {
               {formatCurrency(listing.expectedTotalYieldBirr)}
             </span>
           </div>
+          {/*TODO: add payday date or payoff days from release for Fixed */}
           <div className="flex items-center gap-2">
-            <span className="text-base-content/60">First Payout:</span>
+            <span className="text-base-content/60">Payout:</span>
             <span className="font-medium">
               {formatDate(listing.paydayDate)}
             </span>
           </div>
-          <div className="flex items-center gap-2">
+          {/* <div className="flex items-center gap-2">
             <span className="text-base-content/60">Use of Funds:</span>
             <span className="font-medium">{listing.useOfFunds}</span>
-          </div>
-          <div className="flex items-center gap-2">
+          </div> */}
+          {/* <div className="flex items-center gap-2">
             <span className="text-base-content/60">Risk Factors:</span>
             <span className="font-medium">{listing.riskFactors}</span>
-          </div>
+          </div> */}
         </div>
 
         <div className="gap-2 mt-4 card-actions">
-          <Link
-            to={`/listings/${listing.id}`}
-            className="flex-1 btn btn-primary btn-sm"
-          >
+          <Link to={`${listing._id}`} className="flex-1 btn btn-primary btn-sm">
             View Details
           </Link>
-          <button className="btn-outline btn btn-sm">
+          {/* <button className="btn-outline btn btn-sm">
             <MessageSquare className="w-4 h-4" />
             Update
-          </button>
+          </button> */}
         </div>
       </div>
     </motion.div>

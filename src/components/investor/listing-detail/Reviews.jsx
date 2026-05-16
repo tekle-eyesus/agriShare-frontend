@@ -1,10 +1,11 @@
 import { LISTING_REVIEWS } from "../../../mock-data/investor/data";
 import { RatingStars } from "../../investor/Shared";
+import WriteReview from "./WriteReview";
 
-function Reviews({ avgRating }) {
+function Reviews() {
   return (
     <div className="space-y-4">
-      <div className="flex items-center gap-4 bg-base-200 p-4 rounded-xl">
+      {/* <div className="flex items-center gap-4 bg-base-200 p-4 rounded-xl">
         <div className="text-center">
           <p className="font-bold text-primary text-3xl">
             {avgRating.toFixed(1)}
@@ -14,7 +15,8 @@ function Reviews({ avgRating }) {
         <div className="text-muted-foreground text-xs">
           Based on {LISTING_REVIEWS.length} investor reviews
         </div>
-      </div>
+      </div> */}
+      <WriteReview />
       {LISTING_REVIEWS.map((r) => (
         <div key={r.id} className="pb-4 border-base-200 last:border-0 border-b">
           <div className="flex justify-between items-center">

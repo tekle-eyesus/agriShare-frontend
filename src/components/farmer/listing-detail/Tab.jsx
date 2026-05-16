@@ -5,7 +5,7 @@ export const TabButton = ({ value, activeTab, onTabChange, children }) => {
   return (
     <button
       onClick={() => onTabChange(value)}
-      className={`px-4 py-2 rounded-lg transition-all duration-200 whitespace-nowrap ${
+      className={`px-4 py-2 cursor-pointer rounded-lg transition-all duration-200 whitespace-nowrap text-sm ${
         activeTab === value
           ? "bg-primary text-white shadow-md"
           : "text-base-content/70 hover:bg-base-200"

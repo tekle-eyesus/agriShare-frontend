@@ -9,7 +9,9 @@ import CreateListingModal from "../../components/farmer/listing/CreateListingMod
 import { useAPI } from "../../hook/useApi";
 import { useSuspenseQuery } from "@tanstack/react-query";
 
+//TODO: after creating asset, reinvalidate
 export function Listings() {
+  const [createOpen, setCreateOpen] = useState(false);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [activeTab, setActiveTab] = useState("active");
   const { farmer } = useAPI();
@@ -17,8 +19,6 @@ export function Listings() {
     queryKey: ["listings"],
     queryFn: () => farmer.getListings(),
   });
-  console.log(data);
-  // Handle API response structure
   const listings = data?.data?.listings || [];
   const filteredListings = listings.filter((listing) => {
     if (activeTab === "active") return listing.status === "active";
@@ -65,7 +65,7 @@ export function Listings() {
                 ))}
               </div>
               <button
-                onClick={() => setShowCreateModal(true)}
+                onClick={() => setCreateOpen(true)}
                 className="gap-2 ml-auto btn btn-primary"
               >
                 <Plus className="w-4 h-4" />
@@ -117,7 +117,7 @@ export function Listings() {
               </p>
               <div className="mt-4 card-actions">
                 <button
-                  onClick={() => setShowCreateModal(true)}
+                  onClick={() => setCreateOpen(true)}
                   className="gap-2 btn btn-primary"
                 >
                   <Plus className="w-4 h-4" />
@@ -130,8 +130,8 @@ export function Listings() {
 
         {/* Create Listing Modal */}
         <CreateListingModal
-          isOpen={showCreateModal}
-          onClose={() => setShowCreateModal(false)}
+          open={createOpen}
+          onClose={() => setCreateOpen(false)}
         />
       </div>
     </div>
