@@ -1,36 +1,92 @@
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { CheckCircle2 } from "lucide-react";
 import { PageHeader, Card, EmptyState } from "../../components/investor/Shared";
-import { INVESTMENTS, REFUND_REQUESTS } from "../../mock-data/investor/data";
 import RefundForm from "../../components/investor/refund/RefundForm";
 import Requests from "../../components/investor/refund/Requests";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useAPI } from "../../hook/useApi";
+import toast from "react-hot-toast";
 
 export default function Refunds() {
-  const active = INVESTMENTS.filter(
-    (i) => i.status === "active" || i.status === "funded",
-  );
-  const [listingId, setListingId] = useState(active[0]?.listingId ?? 0);
+  const { investor } = useAPI();
+  const queryClient = useQueryClient();
+
+  const [listingId, setListingId] = useState("");
   const [reason, setReason] = useState("");
   const [agree, setAgree] = useState(false);
   const [filter, setFilter] = useState("All");
   const [submitted, setSubmitted] = useState(false);
 
-  const selected = INVESTMENTS.find((i) => i.listingId === listingId);
+  const { data: activeRes } = useQuery({
+    queryKey: ["active-investments"],
+    queryFn: investor.getActiveInvestments,
+  });
 
-  const filtered = useMemo(
-    () =>
-      REFUND_REQUESTS.filter((r) => filter === "All" || r.status === filter),
-    [filter],
-  );
+  const { data: refundsRes } = useQuery({
+    queryKey: ["refund-requests", filter],
+    queryFn: () => investor.getRefundRequest({ status: filter === "All" ? "all" : filter.toLowerCase(), limit: 100 }),
+  });
+
+  const active = useMemo(() => {
+    const list = activeRes?.data?.investments || [];
+    return list.map(inv => {
+      const listing = inv.listing || {};
+      const shares = inv.sharesOwned || inv.shares || 0;
+      const sharePrice = listing.sharePricePerTokenBirr || 0;
+      return {
+        id: inv._id,
+        listingId: listing._id,
+        listingTitle: listing.pitchTitle || listing.asset?.name || "Unknown Listing",
+        status: inv.status,
+        shares,
+        amountInvested: shares * sharePrice,
+      };
+    });
+  }, [activeRes]);
+
+  useEffect(() => {
+    if (!listingId && active.length > 0) {
+      setListingId(active[0].listingId);
+    }
+  }, [active, listingId]);
+
+  const selected = active.find((i) => String(i.listingId) === String(listingId)) || active[0];
+
+  const filtered = useMemo(() => {
+    const requests = refundsRes?.data?.refundRequests || [];
+    return requests.map(r => ({
+      id: r._id?.substring(0, 8) || r._id,
+      listingTitle: r.listing?.pitchTitle || "Investment Listing",
+      amount: r.requestedAmountBirr || 0,
+      shares: r.requestedShares || 0,
+      requestedAt: new Date(r.createdAt || r.requestedAt || Date.now()).toLocaleDateString(),
+      status: r.status,
+      adminNote: r.adminNote
+    }));
+  }, [refundsRes]);
+
+  const mutation = useMutation({
+    mutationFn: (data) => investor.submitRefundRequest(data),
+    onSuccess: () => {
+      setSubmitted(true);
+      setTimeout(() => setSubmitted(false), 3500);
+      toast.success("Refund request submitted successfully");
+      queryClient.invalidateQueries(["refund-requests"]);
+      setReason("");
+      setAgree(false);
+    },
+    onError: (err) => {
+      toast.error(err?.response?.data?.message || "Failed to submit refund request");
+    }
+  });
 
   const submit = (e) => {
     e.preventDefault();
-    setSubmitted(true);
-    setTimeout(() => setSubmitted(false), 3500);
-    setReason("");
-    setAgree(false);
+    if (!listingId || !reason || !agree) return;
+    mutation.mutate({ listingId, reason });
   };
+
   //TODO: make sure the refund form is available through modal in mobile for the responsiveness
   return (
     <div>

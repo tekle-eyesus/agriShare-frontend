@@ -3,21 +3,67 @@ import { Link } from "react-router-dom";
 import { Download } from "lucide-react";
 import { PageHeader, Card, EmptyState } from "../../components/investor/Shared";
 import { Drawer } from "../../components/investor/Modal";
-import { INVESTMENTS, LISTINGS } from "../../mock-data/investor/data";
 import MobileCard from "../../components/investor/investment/MobileCard";
 import DesktopTable from "../../components/investor/investment/DesktopTable";
 import DrawerContent from "../../components/investor/investment/DrawerContent";
 import FilterCard from "../../components/investor/investment/FilterCard";
+import { useQuery } from "@tanstack/react-query";
+import { useAPI } from "../../hook/useApi";
 
 export default function MyInvestments() {
+  const { investor } = useAPI();
   const [status, setStatus] = useState("All");
   const [type, setType] = useState("All");
   const [search, setSearch] = useState("");
   const [open, setOpen] = useState(null);
 
+  const { data: activeRes, isLoading: isLoadingActive } = useQuery({
+    queryKey: ["active-investments"],
+    queryFn: investor.getActiveInvestments,
+  });
+
+  const { data: historyRes, isLoading: isLoadingHistory } = useQuery({
+    queryKey: ["history-investments"],
+    queryFn: investor.getInvestmentHistory,
+  });
+
+  const mappedInvestments = useMemo(() => {
+    const active = activeRes?.data?.investments || [];
+    const history = historyRes?.data?.history || [];
+    const all = [...active, ...history];
+
+    return all.map((inv) => {
+      const listing = inv.listing || {};
+      const asset = listing.asset || {};
+      const shares = inv.sharesOwned || inv.shares || 0;
+      const sharePrice = listing.sharePricePerTokenBirr || 0; // Might not be populated, fallback to 0
+      const amountInvested = shares * sharePrice || 0; 
+      
+      // Calculate basic ROI if data is available
+      let roi = 0;
+      if (listing.investmentGoalBirr && listing.expectedTotalYieldBirr) {
+        roi = ((listing.expectedTotalYieldBirr - listing.investmentGoalBirr) / listing.investmentGoalBirr) * 100;
+      }
+
+      return {
+        id: inv._id,
+        listingId: listing._id,
+        listingTitle: listing.pitchTitle || asset.name || "Investment Listing",
+        shares: shares,
+        amountInvested: amountInvested,
+        currentValue: amountInvested + (amountInvested * (roi / 100)),
+        roi: roi.toFixed(1),
+        nextPayout: listing.effectivePaydayDate ? new Date(listing.effectivePaydayDate).toLocaleDateString() : "N/A",
+        status: inv.status,
+        type: asset.type || "unknown",
+        image: asset.photos?.[0]?.url || "https://placehold.co/600x400?text=Listing+Image",
+      };
+    });
+  }, [activeRes, historyRes]);
+
   const filtered = useMemo(
     () =>
-      INVESTMENTS.filter((i) => {
+      mappedInvestments.filter((i) => {
         if (status !== "All" && i.status !== status) return false;
         if (type !== "All" && i.type !== type) return false;
         if (
@@ -27,7 +73,7 @@ export default function MyInvestments() {
           return false;
         return true;
       }),
-    [status, type, search],
+    [status, type, search, mappedInvestments],
   );
 
   const exportCSV = () => {
@@ -47,7 +93,9 @@ export default function MyInvestments() {
     a.click();
   };
 
-  const listingFor = (id) => LISTINGS.find((l) => l.id === id);
+  if (isLoadingActive || isLoadingHistory) {
+    return <div className="p-10 text-center">Loading investments...</div>;
+  }
 
   return (
     <div>
@@ -92,7 +140,6 @@ export default function MyInvestments() {
       ) : (
         <>
           <DesktopTable filtered={filtered} setOpen={setOpen} />
-
           <MobileCard filtered={filtered} setOpen={setOpen} />
         </>
       )}

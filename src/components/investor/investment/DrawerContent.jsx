@@ -6,6 +6,13 @@ import Box from "./Box";
 function DrawerContent({ open }) {
   return (
     <div className="space-y-5 p-6">
+      <div className="mb-4">
+        <img 
+          src={open.image || "https://placehold.co/600x400?text=Listing+Image"} 
+          alt={open.listingTitle} 
+          className="w-full h-32 object-cover rounded-xl"
+        />
+      </div>
       <div>
         <p className="text-muted-foreground text-xs uppercase tracking-wide">
           Listing

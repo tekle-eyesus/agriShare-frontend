@@ -23,10 +23,10 @@ export const investorApi = () => ({
       method: "POST",
       body: JSON.stringify(data),
     }),
-  submitRefundRequest: (data) =>
-    apiClient("/investments/refund-requests", {
+  submitRefundRequest: ({ reason, listingId }) =>
+    apiClient(`/investments/refund-requests/${listingId}`, {
       method: "POST",
-      body: JSON.stringify(data),
+      body: JSON.stringify({ reason }),
     }),
   postReview: ({ data, listingId }) =>
     apiClient(`/listings/${listingId}/reviews`, {
