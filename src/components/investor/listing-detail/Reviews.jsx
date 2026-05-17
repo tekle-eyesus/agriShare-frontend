@@ -1,39 +1,37 @@
-import { LISTING_REVIEWS } from "../../../mock-data/investor/data";
-import { RatingStars } from "../../investor/Shared";
-import WriteReview from "./WriteReview";
+import { Star } from "lucide-react";
+import { EmptyState } from "../../investor/Shared";
 
-function Reviews() {
+function Reviews({ reviews = [] }) {
+  if (reviews.length === 0) {
+    return (
+      <EmptyState
+        title="No reviews yet"
+        message="No investors have reviewed this listing yet."
+        icon={Star}
+      />
+    );
+  }
+
   return (
     <div className="space-y-4">
-      {/* <div className="flex items-center gap-4 bg-base-200 p-4 rounded-xl">
-        <div className="text-center">
-          <p className="font-bold text-primary text-3xl">
-            {avgRating.toFixed(1)}
-          </p>
-          <RatingStars rating={avgRating} />
-        </div>
-        <div className="text-muted-foreground text-xs">
-          Based on {LISTING_REVIEWS.length} investor reviews
-        </div>
-      </div> */}
-      <WriteReview />
-      {LISTING_REVIEWS.map((r) => (
-        <div key={r.id} className="pb-4 border-base-200 last:border-0 border-b">
+      {reviews.map((r) => (
+        <div key={r._id} className="pb-4 border-base-200 last:border-0 border-b">
           <div className="flex justify-between items-center">
             <div className="flex items-center gap-2">
               <div className="avatar placeholder">
                 <div className="bg-base-300 rounded-full w-8 text-base-content">
-                  <span className="text-xs">{r.reviewer[0]}</span>
+                  <span className="text-xs">{(r.user?.name || "U")[0]}</span>
                 </div>
               </div>
               <div>
-                <p className="font-semibold text-sm">{r.reviewer}</p>
-                <RatingStars rating={r.rating} />
+                <p className="font-semibold text-sm">{r.user?.name || "User"}</p>
               </div>
             </div>
-            <span className="text-muted-foreground text-xs">{r.date}</span>
+            <span className="text-muted-foreground text-xs">
+              {new Date(r.createdAt || Date.now()).toLocaleDateString()}
+            </span>
           </div>
-          <p className="mt-2 text-muted-foreground text-sm">{r.text}</p>
+          <p className="mt-2 text-muted-foreground text-sm">{r.comment}</p>
         </div>
       ))}
     </div>

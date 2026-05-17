@@ -1,32 +1,43 @@
 import { useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { ArrowLeft } from "lucide-react";
-import {
-  LISTINGS,
-  LISTING_REVIEWS,
-  WALLET,
-} from "../../mock-data/investor/data";
+import { WALLET } from "../../mock-data/investor/data";
 import { formatETB } from "../../utils/format";
 import Investment from "../../components/investor/listing-detail/Investment";
 import Tabs from "../../components/investor/listing-detail/Tabs";
 import ConfirmationModal from "../../components/investor/listing-detail/ConfirmationModal";
 import Hero from "../../components/investor/listing-detail/Hero";
 import Stats from "../../components/investor/listing-detail/Stats";
+import { useQuery } from "@tanstack/react-query";
+import { useAPI } from "../../hook/useApi";
 
 export default function ListingDetail() {
   const { id } = useParams();
   const nav = useNavigate();
-  const listing = LISTINGS.find((l) => l.id === Number(id)) || LISTINGS[0];
+  const { multipleUsers } = useAPI();
+
+  const { data: { data: { listing } = {} } = {}, isLoading } = useQuery({
+    queryKey: ["listing", id],
+    queryFn: () => multipleUsers.getListing(id),
+  });
+
+  const { data: { data: { reviews = [] } = {} } = {} } = useQuery({
+    queryKey: ["listing-reviews", id],
+    queryFn: () => multipleUsers.getListingReviews({ listingId: id }),
+  });
+
   const [tab, setTab] = useState("Overview");
   const [shares, setShares] = useState(1);
   const [confirm, setConfirm] = useState(false);
   const [payment, setPayment] = useState("Wallet");
   const [agree, setAgree] = useState(false);
 
-  const total = shares * listing.sharePrice;
+  if (isLoading) return <div className="p-10 text-center">Loading listing details...</div>;
+  if (!listing) return <div className="p-10 text-center text-error">Failed to load listing.</div>;
+
+  const sharePrice = listing.sharePricePerTokenBirr || 0;
+  const total = shares * sharePrice;
   const insufficient = payment === "Wallet" && total > WALLET.balance;
-  const avgRating =
-    LISTING_REVIEWS.reduce((s, r) => s + r.rating, 0) / LISTING_REVIEWS.length;
 
   return (
     <div>
@@ -38,7 +49,7 @@ export default function ListingDetail() {
         Back
       </button>
 
-      <Hero listing={listing} avgRating={avgRating} />
+      <Hero listing={listing} />
 
       <div className="gap-6 grid grid-cols-1 lg:grid-cols-3 mt-6">
         <div className="space-y-6 lg:col-span-2">
@@ -48,7 +59,7 @@ export default function ListingDetail() {
             tab={tab}
             setTab={setTab}
             listing={listing}
-            avgRating={avgRating}
+            reviews={reviews}
           />
         </div>
 

@@ -19,6 +19,11 @@ function Investment({
   insufficient,
   setConfirm,
 }) {
+  const sharePrice = listing?.sharePricePerTokenBirr || 0;
+  const sharesAvailable = sharePrice ? Math.floor((listing?.fundingRemainingBirr || 0) / sharePrice) : 0;
+  const investors = 0;
+  const daysRemaining = listing?.investmentDeadline ? Math.max(0, Math.ceil((new Date(listing.investmentDeadline) - new Date()) / (1000 * 60 * 60 * 24))) : 0;
+
   return (
     <div className="lg:top-20 lg:sticky lg:self-start">
       <Card className="p-5" hover={false}>
@@ -26,7 +31,7 @@ function Investment({
           Invest in this listing
         </p>
         <p className="mt-1 font-display font-bold text-2xl">
-          {formatETB(listing.sharePrice)}
+          {formatETB(sharePrice)}
           <span className="font-normal text-muted-foreground text-sm">
             {" "}
             / share
@@ -58,7 +63,7 @@ function Investment({
             </button>
           </div>
           <p className="mt-1 text-[11px] text-muted-foreground">
-            Min 1 share · {listing.sharesAvailable} available
+            Min 1 share · {sharesAvailable} available
           </p>
         </div>
 
@@ -106,14 +111,14 @@ function Investment({
               <Users className="w-3.5 h-3.5" />
               Investors
             </span>
-            <span className="font-semibold">{listing.investors}</span>
+            <span className="font-semibold">{investors}</span>
           </div>
           <div className="flex justify-between">
             <span className="flex items-center gap-1 text-muted-foreground">
               <Clock className="w-3.5 h-3.5" />
               Days left
             </span>
-            <span className="font-semibold">{listing.daysRemaining}</span>
+            <span className="font-semibold">{daysRemaining}</span>
           </div>
         </div>
       </Card>

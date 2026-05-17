@@ -9,7 +9,6 @@ import {
   staggerContainer,
 } from "../../components/investor/Shared";
 import Modal from "../../components/investor/Modal";
-import { LISTINGS } from "../../mock-data/investor/data";
 import QuickView from "../../components/investor/marketplace/QuickView";
 import Listing from "../../components/investor/marketplace/Listing";
 import FiltersPanel from "../../components/investor/marketplace/FiltersPanel";
@@ -17,6 +16,7 @@ import { useAPI } from "../../hook/useApi";
 import { useQuery } from "@tanstack/react-query";
 const SORTS = ["Newest", "Popular", "Highest ROI", "Ending soon"];
 
+//TODO: make the filters work and also all listings are having medium by risk
 export default function Marketplace() {
   const [search, setSearch] = useState("");
   const [type, setType] = useState("All");
@@ -33,37 +33,60 @@ export default function Marketplace() {
   const [quickView, setQuickView] = useState(null);
   const [shares, setShares] = useState(1);
 
-  const { common } = useAPI();
+  const { multipleUsers } = useAPI();
 
-  const { data: activeListings } = useQuery({
+  const { data: { data: { listings: activeListings } = {} } = {} } = useQuery({
     queryKey: ["active-listings"],
-    queryFn: () => common.getActiveListings(),
+    queryFn: () => multipleUsers.getActiveListings(),
   });
 
-  console.log(activeListings);
-
   const filtered = useMemo(() => {
-    let arr = LISTINGS.filter((l) => {
+    if (!activeListings) return [];
+    
+    let arr = activeListings.filter((l) => {
+      const expectedYield = l.expectedTotalYieldBirr || 0;
+      const goal = l.investmentGoalBirr || 1;
+      const roi = Number(((expectedYield - goal) / goal * 100).toFixed(1));
+      const minInvestment = l.minSharesPerInvestor * l.sharePricePerTokenBirr;
+      const title = l.pitchTitle || "";
+      const farmerName = l.farmer?.name || "Farmer";
+      const typeStr = l.asset?.type || "unknown";
+      const locationRegion = l.asset?.location?.region || "";
+      const riskLevel = "medium";
+      
       if (
         search &&
-        !l.title.toLowerCase().includes(search.toLowerCase()) &&
-        !l.farmer.toLowerCase().includes(search.toLowerCase())
+        !title.toLowerCase().includes(search.toLowerCase()) &&
+        !farmerName.toLowerCase().includes(search.toLowerCase())
       )
         return false;
-      if (type !== "All" && l.type !== type) return false;
-      if (region !== "All" && !l.location.includes(region)) return false;
-      if (!riskFilters[l.riskLevel]) return false;
-      if (l.roi < minRoi) return false;
-      if (l.minInvestment > maxInvest) return false;
+      if (type !== "All" && typeStr !== type) return false;
+      if (region !== "All" && !locationRegion.toLowerCase().includes(region.toLowerCase())) return false;
+      if (!riskFilters[riskLevel]) return false;
+      if (roi < minRoi) return false;
+      if (minInvestment > maxInvest) return false;
       return true;
     });
-    if (sort === "Highest ROI") arr = [...arr].sort((a, b) => b.roi - a.roi);
-    if (sort === "Ending soon")
-      arr = [...arr].sort((a, b) => a.daysRemaining - b.daysRemaining);
-    if (sort === "Popular")
-      arr = [...arr].sort((a, b) => b.investors - a.investors);
+
+    if (sort === "Highest ROI") {
+      arr = [...arr].sort((a, b) => {
+        const roiA = ((a.expectedTotalYieldBirr || 0) - (a.investmentGoalBirr || 1)) / (a.investmentGoalBirr || 1);
+        const roiB = ((b.expectedTotalYieldBirr || 0) - (b.investmentGoalBirr || 1)) / (b.investmentGoalBirr || 1);
+        return roiB - roiA;
+      });
+    }
+    if (sort === "Ending soon") {
+      arr = [...arr].sort((a, b) => {
+        const daysA = Math.ceil((new Date(a.investmentDeadline) - new Date()) / (1000 * 60 * 60 * 24));
+        const daysB = Math.ceil((new Date(b.investmentDeadline) - new Date()) / (1000 * 60 * 60 * 24));
+        return daysA - daysB;
+      });
+    }
+    if (sort === "Popular") {
+      arr = [...arr].sort((a, b) => (b.totalInvestedBirr || 0) - (a.totalInvestedBirr || 0));
+    }
     return arr;
-  }, [search, type, region, riskFilters, minRoi, maxInvest, sort]);
+  }, [activeListings, search, type, region, riskFilters, minRoi, maxInvest, sort]);
 
   const reset = () => {
     setSearch("");

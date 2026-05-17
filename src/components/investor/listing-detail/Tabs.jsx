@@ -7,7 +7,7 @@ import Updates from "./Updates";
 
 const TABS = ["Overview", "Financial", "Updates", "Reviews", "Documents"];
 
-function Tabs({ tab, listing, setTab, avgRating }) {
+function Tabs({ tab, listing, setTab, reviews }) {
   return (
     <Card className="p-0 overflow-hidden" hover={false}>
       <div
@@ -30,11 +30,11 @@ function Tabs({ tab, listing, setTab, avgRating }) {
 
         {tab === "Financial" && <Financial listing={listing} />}
 
-        {tab === "Updates" && <Updates />}
+        {tab === "Updates" && <Updates listingId={listing._id} />}
 
-        {tab === "Reviews" && <Reviews avgRating={avgRating} />}
+        {tab === "Reviews" && <Reviews reviews={reviews} />}
 
-        {tab === "Documents" && <Documents />}
+        {tab === "Documents" && <Documents listing={listing} />}
       </div>
     </Card>
   );
