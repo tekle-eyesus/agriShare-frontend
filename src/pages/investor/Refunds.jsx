@@ -4,7 +4,7 @@ import { CheckCircle2 } from "lucide-react";
 import { PageHeader, Card, EmptyState } from "../../components/investor/Shared";
 import RefundForm from "../../components/investor/refund/RefundForm";
 import Requests from "../../components/investor/refund/Requests";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient, useInfiniteQuery } from "@tanstack/react-query";
 import { useAPI } from "../../hook/useApi";
 import toast from "react-hot-toast";
 
@@ -23,9 +23,16 @@ export default function Refunds() {
     queryFn: investor.getActiveInvestments,
   });
 
-  const { data: refundsRes } = useQuery({
+  const {
+    data: refundsRes,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage
+  } = useInfiniteQuery({
     queryKey: ["refund-requests", filter],
-    queryFn: () => investor.getRefundRequest({ status: filter === "All" ? "all" : filter.toLowerCase(), limit: 100 }),
+    queryFn: ({ pageParam = 1 }) => investor.getRefundRequest({ status: filter === "All" ? "all" : filter.toLowerCase(), page: pageParam, limit: 10 }),
+    getNextPageParam: (lastPage) => lastPage.data?.hasNextPage ? lastPage.data.page + 1 : undefined,
+    initialPageParam: 1
   });
 
   const active = useMemo(() => {
@@ -54,7 +61,8 @@ export default function Refunds() {
   const selected = active.find((i) => String(i.listingId) === String(listingId)) || active[0];
 
   const filtered = useMemo(() => {
-    const requests = refundsRes?.data?.refundRequests || [];
+    const pages = refundsRes?.pages || [];
+    const requests = pages.flatMap(page => page.data?.refundRequests || []);
     return requests.map(r => ({
       id: r._id?.substring(0, 8) || r._id,
       listingTitle: r.listing?.pitchTitle || "Investment Listing",
@@ -136,7 +144,14 @@ export default function Refunds() {
           )}
         </Card>
 
-        <Requests filtered={filtered} filter={filter} setFilter={setFilter} />
+        <Requests 
+          filtered={filtered} 
+          filter={filter} 
+          setFilter={setFilter} 
+          fetchNextPage={fetchNextPage}
+          hasNextPage={hasNextPage}
+          isFetchingNextPage={isFetchingNextPage}
+        />
       </div>
     </div>
   );

@@ -1,13 +1,14 @@
-import { Megaphone } from "lucide-react";
+import { Megaphone, Loader2 } from "lucide-react";
 import { TabContent } from "./Tab";
 import { UpdateCardModified } from "./Cards";
 import { Card, EmptyState } from "../Shared";
 import {
-  useSuspenseQuery,
+  useSuspenseInfiniteQuery,
   useMutation,
   useQueryClient,
 } from "@tanstack/react-query";
 import { useAPI } from "../../../hook/useApi";
+import { useIntersectionObserver } from "../../../hook/useIntersectionObserver";
 import toast from "react-hot-toast";
 
 function UpdatesTab({
@@ -20,11 +21,21 @@ function UpdatesTab({
 }) {
   const { farmer } = useAPI();
   const queryClient = useQueryClient();
-  const { data: updatesData } = useSuspenseQuery({
+  
+  const { data: updatesData, fetchNextPage, hasNextPage, isFetchingNextPage } = useSuspenseInfiniteQuery({
     queryKey: ["listing-updates", listingId],
-    queryFn: () => farmer.getListingUpdates({ listingId }),
+    queryFn: ({ pageParam = 1 }) => farmer.getListingUpdates({ listingId, page: pageParam, limit: 10 }),
+    getNextPageParam: (lastPage) => lastPage.data?.hasNextPage ? lastPage.data.page + 1 : undefined,
+    initialPageParam: 1,
   });
-  const updates = updatesData?.data?.updates || [];
+
+  const observerRef = useIntersectionObserver(() => {
+    if (hasNextPage && !isFetchingNextPage) {
+      fetchNextPage();
+    }
+  }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
+
+  const updates = updatesData?.pages.flatMap(page => page.data?.updates || []) || [];
 
   const handleDeleteUpdate = (update) => {
     setDeletingUpdate(update);
@@ -61,6 +72,11 @@ function UpdatesTab({
                 onDelete={handleDeleteUpdate}
               />
             ))}
+            {hasNextPage && (
+              <div ref={observerRef} className="py-4 flex justify-center">
+                <Loader2 className="w-6 h-6 animate-spin text-primary" />
+              </div>
+            )}
           </div>
         )}
       </div>

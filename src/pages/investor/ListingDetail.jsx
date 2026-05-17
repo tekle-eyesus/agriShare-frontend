@@ -21,10 +21,6 @@ export default function ListingDetail() {
     queryFn: () => multipleUsers.getListing(id),
   });
 
-  const { data: { data: { reviews = [] } = {} } = {} } = useQuery({
-    queryKey: ["listing-reviews", id],
-    queryFn: () => multipleUsers.getListingReviews({ listingId: id }),
-  });
 
   const [tab, setTab] = useState("Overview");
   const [shares, setShares] = useState(1);

@@ -1,16 +1,35 @@
 import { useAPI } from "../../../hook/useApi";
-import { useQuery } from "@tanstack/react-query";
-import { Calendar } from "lucide-react";
+import { useInfiniteQuery } from "@tanstack/react-query";
+import { Calendar, Loader2 } from "lucide-react";
+import { useIntersectionObserver } from "../../../hook/useIntersectionObserver";
 
 function Updates({ listingId }) {
   const { multipleUsers } = useAPI();
-  const { data: { data: { updates = [] } = {} } = {}, isLoading } = useQuery({
+  
+  const {
+    data,
+    isLoading,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+  } = useInfiniteQuery({
     queryKey: ["listing-updates", listingId],
-    queryFn: () => multipleUsers.getListingUpdates({ listingId }),
+    queryFn: ({ pageParam = 1 }) => multipleUsers.getListingUpdates({ listingId, page: pageParam, limit: 10 }),
+    getNextPageParam: (lastPage) => lastPage.data?.hasNextPage ? lastPage.data.page + 1 : undefined,
+    initialPageParam: 1,
     enabled: !!listingId,
   });
 
+  const observerRef = useIntersectionObserver(() => {
+    if (hasNextPage && !isFetchingNextPage) {
+      fetchNextPage();
+    }
+  }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
+
   if (isLoading) return <div className="p-4 text-center">Loading updates...</div>;
+  
+  const updates = data?.pages.flatMap(page => page.data?.updates || []) || [];
+
   if (!updates.length) return <div className="p-4 text-center text-muted-foreground">No updates yet.</div>;
 
   return (
@@ -38,6 +57,12 @@ function Updates({ listingId }) {
           )}
         </div>
       ))}
+      
+      {hasNextPage && (
+        <div ref={observerRef} className="py-4 flex justify-center">
+          <Loader2 className="w-6 h-6 animate-spin text-primary" />
+        </div>
+      )}
     </div>
   );
 }

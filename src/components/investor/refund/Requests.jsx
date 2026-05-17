@@ -1,11 +1,18 @@
 import { Card, EmptyState, StatusBadge } from "../../investor/Shared";
 import { formatETB } from "../../../utils/format";
 import Timeline from "./Timeline";
-import { FileText } from "lucide-react";
+import { FileText, Loader2 } from "lucide-react";
+import { useIntersectionObserver } from "../../../hook/useIntersectionObserver";
 
 const STATUS_FILTERS = ["All", "pending", "approved", "rejected"];
 
-function Requests({ filtered, filter, setFilter }) {
+function Requests({ filtered, filter, setFilter, fetchNextPage, hasNextPage, isFetchingNextPage }) {
+  const observerRef = useIntersectionObserver(() => {
+    if (hasNextPage && !isFetchingNextPage) {
+      fetchNextPage();
+    }
+  }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
+
   return (
     <div className="space-y-4 lg:col-span-2">
       <Card className="p-4" hover={false}>
@@ -42,6 +49,12 @@ function Requests({ filtered, filter, setFilter }) {
       )}
 
       <MobileCard filtered={filtered} />
+
+      {hasNextPage && (
+        <div ref={observerRef} className="py-4 flex justify-center">
+          <Loader2 className="w-6 h-6 animate-spin text-primary" />
+        </div>
+      )}
 
       {filtered[0] && (
         <Card className="p-5" hover={false}>

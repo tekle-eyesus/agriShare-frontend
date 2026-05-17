@@ -1,7 +1,36 @@
-import { Star } from "lucide-react";
+import { Star, Loader2 } from "lucide-react";
 import { EmptyState } from "../../investor/Shared";
+import { useAPI } from "../../../hook/useApi";
+import { useInfiniteQuery } from "@tanstack/react-query";
+import { useIntersectionObserver } from "../../../hook/useIntersectionObserver";
 
-function Reviews({ reviews = [] }) {
+function Reviews({ listingId }) {
+  const { multipleUsers } = useAPI();
+
+  const {
+    data,
+    isLoading,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+  } = useInfiniteQuery({
+    queryKey: ["listing-reviews", listingId],
+    queryFn: ({ pageParam = 1 }) => multipleUsers.getListingReviews({ listingId, page: pageParam, limit: 10 }),
+    getNextPageParam: (lastPage) => lastPage.data?.hasNextPage ? lastPage.data.page + 1 : undefined,
+    initialPageParam: 1,
+    enabled: !!listingId,
+  });
+
+  const observerRef = useIntersectionObserver(() => {
+    if (hasNextPage && !isFetchingNextPage) {
+      fetchNextPage();
+    }
+  }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
+
+  if (isLoading) return <div className="p-4 text-center">Loading reviews...</div>;
+
+  const reviews = data?.pages.flatMap(page => page.data?.reviews || []) || [];
+
   if (reviews.length === 0) {
     return (
       <EmptyState
@@ -20,11 +49,11 @@ function Reviews({ reviews = [] }) {
             <div className="flex items-center gap-2">
               <div className="avatar placeholder">
                 <div className="bg-base-300 rounded-full w-8 text-base-content">
-                  <span className="text-xs">{(r.user?.name || "U")[0]}</span>
+                  <span className="text-xs">{(r.user?.name || r.user?.firstName || "U")[0]}</span>
                 </div>
               </div>
               <div>
-                <p className="font-semibold text-sm">{r.user?.name || "User"}</p>
+                <p className="font-semibold text-sm">{r.user?.name || r.user?.firstName || "User"}</p>
               </div>
             </div>
             <span className="text-muted-foreground text-xs">
@@ -34,6 +63,12 @@ function Reviews({ reviews = [] }) {
           <p className="mt-2 text-muted-foreground text-sm">{r.comment}</p>
         </div>
       ))}
+
+      {hasNextPage && (
+        <div ref={observerRef} className="py-4 flex justify-center">
+          <Loader2 className="w-6 h-6 animate-spin text-primary" />
+        </div>
+      )}
     </div>
   );
 }

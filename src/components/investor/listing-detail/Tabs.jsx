@@ -32,7 +32,7 @@ function Tabs({ tab, listing, setTab, reviews }) {
 
         {tab === "Updates" && <Updates listingId={listing._id} />}
 
-        {tab === "Reviews" && <Reviews reviews={reviews} />}
+        {tab === "Reviews" && <Reviews listingId={listing._id} />}
 
         {tab === "Documents" && <Documents listing={listing} />}
       </div>
