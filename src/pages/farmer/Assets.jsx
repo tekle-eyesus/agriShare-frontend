@@ -1,6 +1,6 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Plus, Search } from "lucide-react";
+import { Plus, Search, Loader2 } from "lucide-react";
 import FilterChips from "../../components/farmer/asset/Filter";
 import CreateAssetModal from "../../components/farmer/asset/CreateAssetModal";
 import EmptyState from "../../components/farmer/asset/EmptyState";
@@ -9,19 +9,29 @@ import ViewAssetModal from "../../components/farmer/asset/ViewAssetModal";
 import { staggerContainer } from "../../utils/motionVariants";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { useAPI } from "../../hook/useApi";
-//TODO: for this on the list of assets make sure the alignment is right using subgrid
+import { useIntersectionObserver } from "../../hook/useIntersectionObserver";
+
+const LIMIT = 12;
+
 export function Assets() {
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [filterType, setFilterType] = useState("all");
   const [viewing, setViewing] = useState(null);
+  const [page, setPage] = useState(1);
   const { farmer } = useAPI();
+  
   const {
     data: { data: { assets = [] } = {} },
   } = useSuspenseQuery({
     queryKey: ["assets"],
     queryFn: () => farmer.getAssets(),
   });
+
+  useEffect(() => {
+    setPage(1);
+  }, [searchQuery, filterType]);
+
   const filteredAssets = assets?.filter((asset) => {
     const matchesSearch =
       asset.name.toLowerCase().startsWith(searchQuery.toLowerCase()) ||
@@ -37,8 +47,16 @@ export function Assets() {
       asset.type === filterType ||
       asset.status === filterType;
     return matchesSearch && matchesType;
+  }) || [];
+
+  const visibleAssets = filteredAssets.slice(0, page * LIMIT);
+  const hasNextPage = page * LIMIT < filteredAssets.length;
+
+  const { loadMoreRef } = useIntersectionObserver({
+    onIntersect: () => setPage((p) => p + 1),
+    enabled: hasNextPage,
   });
-  // console.log(filteredAssets);
+
   const handleViewDetails = (asset) => {
     console.log("View details:", asset);
     // Implement view details logic
@@ -107,24 +125,34 @@ export function Assets() {
 
       {/* Asset Grid */}
       {filteredAssets?.length > 0 ? (
-        <motion.div
-          variants={staggerContainer}
-          initial="initial"
-          animate="animate"
-          className="gap-6 grid sm:grid-cols-2 lg:grid-cols-3"
-        >
-          <AnimatePresence>
-            {filteredAssets.map((asset) => (
-              <AssetCard
-                key={asset._id}
-                asset={asset}
-                onViewDetails={() => setViewing(asset)}
-                onEdit={handleEdit}
-                onDelete={handleDelete}
-              />
-            ))}
-          </AnimatePresence>
-        </motion.div>
+        <>
+          <motion.div
+            variants={staggerContainer}
+            initial="initial"
+            animate="animate"
+            className="gap-6 grid sm:grid-cols-2 lg:grid-cols-3"
+          >
+            <AnimatePresence>
+              {visibleAssets.map((asset) => (
+                <AssetCard
+                  key={asset._id}
+                  asset={asset}
+                  onViewDetails={() => setViewing(asset)}
+                  onEdit={handleEdit}
+                  onDelete={handleDelete}
+                />
+              ))}
+            </AnimatePresence>
+          </motion.div>
+          <div
+            ref={loadMoreRef}
+            className="flex justify-center p-6 min-h-[60px]"
+          >
+            {hasNextPage && (
+              <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
+            )}
+          </div>
+        </>
       ) : (
         <EmptyState onCreate={() => setShowCreateModal(true)} />
       )}

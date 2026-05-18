@@ -2,7 +2,7 @@ import { Card, StatusBadge } from "../Shared";
 import { formatETB } from "../../../utils/format";
 import { useState, useEffect } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
-
+//TODO: the investor count is not fetched from api
 function Hero({ listing }) {
   const photos = listing?.asset?.photos || [];
   const images = photos.length > 0 ? photos.map(p => p.url) : ["https://placehold.co/600x400?text=No+Image"];

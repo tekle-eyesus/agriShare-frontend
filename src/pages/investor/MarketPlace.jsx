@@ -1,6 +1,6 @@
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { Search, SlidersHorizontal, X } from "lucide-react";
+import { Search, SlidersHorizontal, X, Loader2 } from "lucide-react";
 import {
   PageHeader,
   Card,
@@ -14,9 +14,11 @@ import Listing from "../../components/investor/marketplace/Listing";
 import FiltersPanel from "../../components/investor/marketplace/FiltersPanel";
 import { useAPI } from "../../hook/useApi";
 import { useQuery } from "@tanstack/react-query";
-const SORTS = ["Newest", "Popular", "Highest ROI", "Ending soon"];
+import { useIntersectionObserver } from "../../hook/useIntersectionObserver";
 
-//TODO: make the filters work and also all listings are having medium by risk
+const SORTS = ["Newest", "Popular", "Highest ROI", "Ending soon"];
+const LIMIT = 12;
+
 export default function Marketplace() {
   const [search, setSearch] = useState("");
   const [type, setType] = useState("All");
@@ -32,6 +34,7 @@ export default function Marketplace() {
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [quickView, setQuickView] = useState(null);
   const [shares, setShares] = useState(1);
+  const [page, setPage] = useState(1);
 
   const { multipleUsers } = useAPI();
 
@@ -39,6 +42,10 @@ export default function Marketplace() {
     queryKey: ["active-listings"],
     queryFn: () => multipleUsers.getActiveListings(),
   });
+
+  useEffect(() => {
+    setPage(1);
+  }, [search, type, region, riskFilters, minRoi, maxInvest, sort]);
 
   const filtered = useMemo(() => {
     if (!activeListings) return [];
@@ -97,6 +104,14 @@ export default function Marketplace() {
     setRiskFilters({ low: true, medium: true, high: true });
     setSort("Newest");
   };
+
+  const visibleListings = filtered.slice(0, page * LIMIT);
+  const hasNextPage = page * LIMIT < filtered.length;
+
+  const { loadMoreRef } = useIntersectionObserver({
+    onIntersect: () => setPage((p) => p + 1),
+    enabled: hasNextPage,
+  });
 
   const FiltersPanelComponent = (
     <FiltersPanel
@@ -189,24 +204,34 @@ export default function Marketplace() {
               />
             </Card>
           ) : (
-            <motion.div
-              variants={staggerContainer}
-              initial="initial"
-              animate="animate"
-              className="gap-4 grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3"
-            >
-              {filtered.map((listing) => (
-                <motion.div key={listing.id} variants={fadeInUp}>
-                  <Listing
-                    listing={listing}
-                    handleQuickView={() => {
-                      setQuickView(listing);
-                      setShares(1);
-                    }}
-                  />
-                </motion.div>
-              ))}
-            </motion.div>
+            <>
+              <motion.div
+                variants={staggerContainer}
+                initial="initial"
+                animate="animate"
+                className="gap-4 grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3"
+              >
+                {visibleListings.map((listing) => (
+                  <motion.div key={listing.id || listing._id} variants={fadeInUp}>
+                    <Listing
+                      listing={listing}
+                      handleQuickView={() => {
+                        setQuickView(listing);
+                        setShares(1);
+                      }}
+                    />
+                  </motion.div>
+                ))}
+              </motion.div>
+              <div
+                ref={loadMoreRef}
+                className="flex justify-center p-6 min-h-[60px]"
+              >
+                {hasNextPage && (
+                  <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
+                )}
+              </div>
+            </>
           )}
         </div>
       </div>

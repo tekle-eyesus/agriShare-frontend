@@ -9,8 +9,8 @@ export const farmerApi = () => ({
   getActiveListings: () => apiClient("/listings/active", { method: "GET" }),
   getListing: (listingId) =>
     apiClient(`/listings/${listingId}`, { method: "GET" }),
-  getListingInvestors: (listingId) =>
-    apiClient(`/listings/${listingId}/investors`, { method: "GET" }),
+  getListingInvestors: ({ listingId, page = 1, limit = 10 }) =>
+    apiClient(`/listings/${listingId}/investors?page=${page}&limit=${limit}`, { method: "GET" }),
   getActiveInvestments: () =>
     apiClient(`/investments/farmer/my-investments`, { method: "GET" }),
   getVerificationStatus: () =>

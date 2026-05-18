@@ -9,6 +9,7 @@ import {
   Eye,
   ChevronLeft,
   ChevronRight,
+  Loader2,
 } from "lucide-react";
 import {
   PageHeader,
@@ -17,30 +18,31 @@ import {
   EmptyState,
 } from "../../components/admin/shared";
 import Modal from "../../components/admin/Modal";
-import { useSuspenseQuery } from "@tanstack/react-query";
+import { useSuspenseInfiniteQuery } from "@tanstack/react-query";
 import { useAPI } from "../../hook/useApi";
 import VerificationDetailModal from "../../components/admin/verification/VerificationDetailModal";
+import { useIntersectionObserver } from "../../hook/useIntersectionObserver";
 
 const REGIONS = ["All", "Amhara", "Oromia", "SNNPR", "Tigray"];
 const STATUSES = ["pending", "rejected"];
 
-//TODO: fix the empty UI fix the min and max width
-//TODO: also fix the UI where we have a filter and when the empty state and the filters present then we have a big ui problem
 export default function FarmerVerifications() {
   const [q, setQ] = useState("");
   const [region, setRegion] = useState("All");
   const [statusFilter, setStatusFilter] = useState(["pending"]);
-  const [selected, setSelected] = useState([]);
-  const [page, setPage] = useState(1);
   const [active, setActive] = useState(null);
   const [comment, setComment] = useState("");
-  const PER = 8;
+  
   const { admin } = useAPI();
-  const { data: { data: { verifications: pendingVerifications } } = {} } =
-    useSuspenseQuery({
-      queryKey: ["pending-farmers-veriication"],
-      queryFn: admin.getPendingVerifications,
-    });
+  
+  const { data: verificationsData, fetchNextPage, hasNextPage, isFetchingNextPage } = useSuspenseInfiniteQuery({
+    queryKey: ["pending-farmers-verification"],
+    queryFn: ({ pageParam = 1 }) => admin.getVerificationQueue({ page: pageParam, limit: 10 }),
+    getNextPageParam: (lastPage) => lastPage.data?.hasNextPage ? lastPage.data.page + 1 : undefined,
+    initialPageParam: 1,
+  });
+
+  const pendingVerifications = verificationsData?.pages.flatMap(page => page.data?.items || []) || [];
 
   const filtered = useMemo(() => {
     return pendingVerifications.filter((f) => {
@@ -56,11 +58,14 @@ export default function FarmerVerifications() {
       if (statusFilter.length && !statusFilter.includes(f.status)) return false;
       return true;
     });
-  }, [q, region, statusFilter]);
+  }, [q, region, statusFilter, pendingVerifications]);
 
-  const pages = Math.max(1, Math.ceil(filtered.length / PER));
-  const view = filtered.slice((page - 1) * PER, page * PER);
-  const allSel = view.every((v) => selected.includes(v.id)) && view.length > 0;
+  const view = filtered;
+
+  const { loadMoreRef } = useIntersectionObserver({
+    onIntersect: fetchNextPage,
+    enabled: hasNextPage,
+  });
 
   const toggleStatus = (s) => {
     setStatusFilter((p) =>
@@ -91,83 +96,77 @@ export default function FarmerVerifications() {
         }
       />
 
-      <div
-        className={`${view.length === 0 ? "place-items-center" : ""} gap-5 grid grid-cols-1 lg:grid-cols-[260px_1fr]`}
-      >
-        {pendingVerifications.length > 0 && (
-          <aside className="space-y-3">
-            <Card className="p-4">
-              <p className="flex items-center gap-2 mb-3 font-semibold text-muted-foreground text-xs uppercase tracking-wider">
-                <Filter className="w-3.5 h-3.5" /> Filters
-              </p>
-              <div className="space-y-4">
-                <div>
-                  <label className="block mb-1.5 font-medium text-xs label-text">
-                    Search
-                  </label>
-                  <label className="flex items-center gap-2 rounded-lg input input-sm input-bordered">
-                    <Search className="w-3.5 h-3.5 text-muted-foreground" />
-                    <input
-                      value={q}
-                      onChange={(e) => setQ(e.target.value)}
-                      placeholder="Name or ID…"
-                      className="bg-transparent outline-none text-sm grow"
-                    />
-                  </label>
-                </div>
-                <div>
-                  <label className="block mb-1.5 font-medium text-xs label-text">
-                    Region
-                  </label>
-                  <select
-                    value={region}
-                    onChange={(e) => setRegion(e.target.value)}
-                    className="rounded-lg w-full select-bordered select-sm select"
-                  >
-                    {REGIONS.map((r) => (
-                      <option key={r}>{r}</option>
-                    ))}
-                  </select>
-                </div>
-                <div>
-                  <p className="mb-1.5 font-medium text-xs label-text">
-                    Status
-                  </p>
-                  <div className="space-y-1.5">
-                    {STATUSES.map((s) => (
-                      <label
-                        key={s}
-                        className="flex items-center gap-2 cursor-pointer"
-                      >
-                        <input
-                          type="checkbox"
-                          checked={statusFilter.includes(s)}
-                          onChange={() => toggleStatus(s)}
-                          className="checkbox checkbox-sm checkbox-primary"
-                        />
-                        <span className="text-sm capitalize">{s}</span>
-                      </label>
-                    ))}
-                  </div>
-                </div>
-                <button
-                  onClick={() => {
-                    setQ("");
-                    setRegion("All");
-                    setStatusFilter(["pending"]);
-                  }}
-                  className="w-full text-muted-foreground normal-case btn btn-ghost btn-sm"
-                >
-                  Reset filters
-                </button>
+      <div className="gap-5 grid grid-cols-1 lg:grid-cols-[260px_1fr]">
+        <aside className="space-y-3">
+          <Card className="p-4">
+            <p className="flex items-center gap-2 mb-3 font-semibold text-muted-foreground text-xs uppercase tracking-wider">
+              <Filter className="w-3.5 h-3.5" /> Filters
+            </p>
+            <div className="space-y-4">
+              <div>
+                <label className="block mb-1.5 font-medium text-xs label-text">
+                  Search
+                </label>
+                <label className="flex items-center gap-2 rounded-lg input input-sm input-bordered">
+                  <Search className="w-3.5 h-3.5 text-muted-foreground" />
+                  <input
+                    value={q}
+                    onChange={(e) => setQ(e.target.value)}
+                    placeholder="Name or ID…"
+                    className="bg-transparent outline-none text-sm grow"
+                  />
+                </label>
               </div>
-            </Card>
-          </aside>
-        )}
+              <div>
+                <label className="block mb-1.5 font-medium text-xs label-text">
+                  Region
+                </label>
+                <select
+                  value={region}
+                  onChange={(e) => setRegion(e.target.value)}
+                  className="rounded-lg w-full select-bordered select-sm select"
+                >
+                  {REGIONS.map((r) => (
+                    <option key={r}>{r}</option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <p className="mb-1.5 font-medium text-xs label-text">
+                  Status
+                </p>
+                <div className="space-y-1.5">
+                  {STATUSES.map((s) => (
+                    <label
+                      key={s}
+                      className="flex items-center gap-2 cursor-pointer"
+                    >
+                      <input
+                        type="checkbox"
+                        checked={statusFilter.includes(s)}
+                        onChange={() => toggleStatus(s)}
+                        className="checkbox checkbox-sm checkbox-primary"
+                      />
+                      <span className="text-sm capitalize">{s}</span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+              <button
+                onClick={() => {
+                  setQ("");
+                  setRegion("All");
+                  setStatusFilter(["pending"]);
+                }}
+                className="w-full text-muted-foreground normal-case btn btn-ghost btn-sm"
+              >
+                Reset filters
+              </button>
+            </div>
+          </Card>
+        </aside>
 
-        <Card
-          className={`${view.length === 0 ? "lg:col-span-2" : ""} overflow-hidden`}
-        >
+        <Card className="overflow-hidden">
           {view.length === 0 ? (
             <EmptyState
               style="2xl:min-w-xl sm:min-w-lg"
@@ -245,41 +244,19 @@ export default function FarmerVerifications() {
             </div>
           )}
 
-          {/* Pagination */}
+          {/* Infinite Scroll Sentinel */}
           {view.length > 0 && (
-            <div className="flex justify-between items-center px-4 py-3 border-base-300 border-t">
-              <p className="text-muted-foreground text-xs">
-                Showing{" "}
-                <b>
-                  {(page - 1) * PER + 1}–{Math.min(page * PER, filtered.length)}
-                </b>{" "}
-                of <b>{filtered.length}</b>
-              </p>
-              <div className="join">
-                <button
-                  className="join-item btn btn-sm"
-                  disabled={page === 1}
-                  onClick={() => setPage((p) => p - 1)}
-                >
-                  <ChevronLeft className="w-3.5 h-3.5" />
-                </button>
-                {Array.from({ length: pages }, (_, i) => (
-                  <button
-                    key={i}
-                    className={`join-item btn btn-sm ${page === i + 1 ? "btn-primary" : ""}`}
-                    onClick={() => setPage(i + 1)}
-                  >
-                    {i + 1}
-                  </button>
-                ))}
-                <button
-                  className="join-item btn btn-sm"
-                  disabled={page === pages}
-                  onClick={() => setPage((p) => p + 1)}
-                >
-                  <ChevronRight className="w-3.5 h-3.5" />
-                </button>
-              </div>
+            <div
+              ref={loadMoreRef}
+              className="flex justify-center p-4 min-h-[40px] border-base-300 border-t"
+            >
+              {isFetchingNextPage ? (
+                <Loader2 className="w-5 h-5 animate-spin text-muted-foreground" />
+              ) : hasNextPage ? (
+                <span className="text-sm text-muted-foreground">
+                  Scroll for more
+                </span>
+              ) : null}
             </div>
           )}
         </Card>

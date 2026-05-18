@@ -1,6 +1,6 @@
 import { motion } from "framer-motion";
 import { useMemo, useState } from "react";
-import { Search, Eye } from "lucide-react";
+import { Search, Eye, Loader2 } from "lucide-react";
 import {
   PageHeader,
   Card,
@@ -8,21 +8,24 @@ import {
   EmptyState,
 } from "../../components/admin/shared";
 import UserProfileModal from "../../components/admin/user-management/UserProfileModal";
-import { useSuspenseQuery } from "@tanstack/react-query";
+import { useSuspenseInfiniteQuery } from "@tanstack/react-query";
 import { useAPI } from "../../hook/useApi";
+import { useIntersectionObserver } from "../../hook/useIntersectionObserver";
 
 export default function UserManagement() {
   const [q, setQ] = useState("");
   const [role, setRole] = useState("All");
   const [active, setActive] = useState(null);
   const { admin } = useAPI();
-  const { data } = useSuspenseQuery({
-    queryKey: ["users"],
-    queryFn: () => admin.getAllUsers(),
+  
+  const { data: usersData, fetchNextPage, hasNextPage, isFetchingNextPage } = useSuspenseInfiniteQuery({
+    queryKey: ["users", role],
+    queryFn: ({ pageParam = 1 }) => admin.getAllUsers({ role: role !== "All" ? role.toLowerCase() : undefined, page: pageParam, limit: 10 }),
+    getNextPageParam: (lastPage) => lastPage.data?.page < lastPage.data?.pages ? lastPage.data.page + 1 : undefined,
+    initialPageParam: 1,
   });
 
-  const users = data?.data?.users || [];
-  const totalCount = data?.data?.total || 0;
+  const users = usersData?.pages.flatMap(page => page.data?.users || []) || [];
 
   const filtered = useMemo(
     () =>
@@ -34,12 +37,15 @@ export default function UserManagement() {
             .startsWith(q.toLowerCase())
         )
           return false;
-        if (role !== "All" && u.role.toLowerCase() !== role.toLowerCase())
-          return false;
         return true;
       }),
-    [q, role, users],
+    [q, users],
   );
+
+  const { loadMoreRef } = useIntersectionObserver({
+    onIntersect: fetchNextPage,
+    enabled: hasNextPage,
+  });
 
   return (
     <>
@@ -154,6 +160,18 @@ export default function UserManagement() {
                 ))}
               </tbody>
             </table>
+            <div
+              ref={loadMoreRef}
+              className="flex justify-center p-4 min-h-[40px]"
+            >
+              {isFetchingNextPage ? (
+                <Loader2 className="w-5 h-5 animate-spin text-muted-foreground" />
+              ) : hasNextPage ? (
+                <span className="text-sm text-muted-foreground">
+                  Scroll for more
+                </span>
+              ) : null}
+            </div>
           </div>
         )}
       </Card>

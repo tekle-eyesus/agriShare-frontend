@@ -1,10 +1,14 @@
 import { apiClient } from "./client";
 
 export const adminApi = () => ({
-  getAllUsers: () =>
-    apiClient("/users/admin/users", {
+  getAllUsers: ({ role, status = "all", search, page = 1, limit = 20 } = {}) => {
+    const params = new URLSearchParams({ page, limit, status });
+    if (role) params.append("role", role);
+    if (search) params.append("search", search);
+    return apiClient(`/users/admin/users?${params.toString()}`, {
       method: "GET",
-    }),
+    });
+  },
   getActiveUsers: () =>
     apiClient("/users/admin/users?status=active", {
       method: "GET",
@@ -20,14 +24,14 @@ export const adminApi = () => ({
     apiClient(`/admin/queues/verifications?page=${page}&limit=${limit}`, {
       method: "GET",
     }),
-  getAssetQueue: (status = "all", page = 1, limit = 20) =>
+  getAssetQueue: ({ status = "all", page = 1, limit = 20 }) =>
     apiClient(
-      `/investments/my-refund-requests?status=${status}&page=${page}&limit=${limit}`,
+      `/admin/queues/assets?status=${status}&page=${page}&limit=${limit}`,
       {
         method: "GET",
       },
     ),
-  getRefundRequests: (status = "all", page = 1, limit = 20) =>
+  getRefundRequests: ({ status = "all", page = 1, limit = 20 }) =>
     apiClient(
       `/investments/admin/refund-requests?status=${status}&page=${page}&limit=${limit}`,
       {

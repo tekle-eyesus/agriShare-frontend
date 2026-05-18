@@ -55,7 +55,6 @@ export default function ListingDetail() {
             tab={tab}
             setTab={setTab}
             listing={listing}
-            reviews={reviews}
           />
         </div>
 

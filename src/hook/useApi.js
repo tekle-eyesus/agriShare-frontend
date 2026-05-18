@@ -4,6 +4,7 @@ import { commonApi } from "../api/common";
 import { multipleUsersApi } from "../api/multipleUsers";
 import { farmerApi } from "../api/farmer";
 import { investorApi } from "../api/investor";
+import { paymentApi } from "../api/payment";
 
 export const useAPI = () => {
   return {
@@ -13,5 +14,6 @@ export const useAPI = () => {
     investor: investorApi(),
     farmer: farmerApi(),
     admin: adminApi(),
+    payment: paymentApi(),
   };
 };

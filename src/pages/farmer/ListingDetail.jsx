@@ -76,58 +76,56 @@ export function ListingDetail() {
           </Link>
         </motion.div>
 
-        <Hero listing={listing} />
+        
+          <Hero listing={listing} />
 
-        <div className="bg-base-100 shadow-md border border-base-200 card">
-          <Tabs activeTab={activeTab} setActiveTab={setActiveTab} />
+          <div className="bg-base-100 shadow-md border border-base-200 card">
+            <Tabs activeTab={activeTab} setActiveTab={setActiveTab} />
 
-          <div className="p-6">
-            <OverviewTab listing={listing} activeTab={activeTab} />
-
-            <InvestorsTab activeTab={activeTab} />
-
-            <UpdatesTab
-              activeTab={activeTab}
-              setPostOpen={setPostOpen}
-              setEditingUpdate={setEditingUpdate}
-              setDeleteOpen={setDeleteOpen}
-              setDeletingUpdate={setDeletingUpdate}
-              listingId={id}
-            />
-
-            <ReviewTab activeTab={activeTab} listingId={id} />
-
-            <PayoutTab activeTab={activeTab} />
-
-            <AnalyticsTab activeTab={activeTab} listing={listing} />
+            <div className="p-6">
+              {activeTab === "overview" && <OverviewTab listing={listing} activeTab={activeTab} />}
+              {activeTab === "investors" && <InvestorsTab activeTab={activeTab} listingId={id} />}
+              {activeTab === "updates" && (
+                <UpdatesTab
+                  activeTab={activeTab}
+                  setPostOpen={setPostOpen}
+                  setEditingUpdate={setEditingUpdate}
+                  setDeleteOpen={setDeleteOpen}
+                  setDeletingUpdate={setDeletingUpdate}
+                  listingId={id}
+                />
+              )}
+              {activeTab === "reviews" && <ReviewTab activeTab={activeTab} listingId={id} />}
+              {activeTab === "payouts" && <PayoutTab activeTab={activeTab} />}
+              {activeTab === "analytics" && <AnalyticsTab activeTab={activeTab} listing={listing} />}
+            </div>
           </div>
-        </div>
 
-        <ActionBar setShowUpdateModal={setPostOpen} />
+          <ActionBar setShowUpdateModal={setPostOpen} />
 
-        <PostUpdateModal
-          open={postOpen}
-          onClose={() => setPostOpen(false)}
-          listingId={id}
-          onSuccess={handleUpdateSuccess}
-        />
-        <EditUpdateModal
-          update={editingUpdate}
-          onClose={() => setEditingUpdate(null)}
-          listingId={id}
-          updateId={editingUpdate?._id}
-          onSuccess={handleUpdateSuccess}
-        />
-        <DeleteModal
-          open={deleteOpen}
-          onClose={() => {
-            setDeleteOpen(false);
-            setDeletingUpdate(null);
-          }}
-          update={deletingUpdate}
-          listingId={id}
-          onSuccess={handleUpdateSuccess}
-        />
+          <PostUpdateModal
+            open={postOpen}
+            onClose={() => setPostOpen(false)}
+            listingId={id}
+            onSuccess={handleUpdateSuccess}
+          />
+          <EditUpdateModal
+            update={editingUpdate}
+            onClose={() => setEditingUpdate(null)}
+            listingId={id}
+            updateId={editingUpdate?._id}
+            onSuccess={handleUpdateSuccess}
+          />
+          <DeleteModal
+            open={deleteOpen}
+            onClose={() => {
+              setDeleteOpen(false);
+              setDeletingUpdate(null);
+            }}
+            update={deletingUpdate}
+            listingId={id}
+            onSuccess={handleUpdateSuccess}
+          />
       </div>
     </div>
   );

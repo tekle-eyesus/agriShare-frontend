@@ -1,6 +1,6 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Plus } from "lucide-react";
+import { Plus, Loader2 } from "lucide-react";
 
 import { mockListings } from "../../mock-data/farmer/listing";
 import { staggerContainer } from "../../utils/motionVariants";
@@ -8,23 +8,41 @@ import ListingCard from "../../components/farmer/listing/ListingCard";
 import CreateListingModal from "../../components/farmer/listing/CreateListingModal";
 import { useAPI } from "../../hook/useApi";
 import { useSuspenseQuery } from "@tanstack/react-query";
+import { useIntersectionObserver } from "../../hook/useIntersectionObserver";
+
+const LIMIT = 12;
 
 //TODO: after creating asset, reinvalidate
 export function Listings() {
   const [createOpen, setCreateOpen] = useState(false);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [activeTab, setActiveTab] = useState("active");
+  const [page, setPage] = useState(1);
   const { farmer } = useAPI();
+  
   const { data, isLoading, error } = useSuspenseQuery({
     queryKey: ["listings"],
     queryFn: () => farmer.getListings(),
   });
+  
+  useEffect(() => {
+    setPage(1);
+  }, [activeTab]);
+
   const listings = data?.data?.listings || [];
   const filteredListings = listings.filter((listing) => {
     if (activeTab === "active") return listing.status === "active";
     if (activeTab === "funded") return listing.status === "funded";
     if (activeTab === "completed") return listing.status === "completed";
     return true;
+  });
+
+  const visibleListings = filteredListings.slice(0, page * LIMIT);
+  const hasNextPage = page * LIMIT < filteredListings.length;
+
+  const { loadMoreRef } = useIntersectionObserver({
+    onIntersect: () => setPage((p) => p + 1),
+    enabled: hasNextPage,
   });
 
   const tabs = [
@@ -77,18 +95,28 @@ export function Listings() {
 
         {/* Listings Grid */}
         {filteredListings.length > 0 ? (
-          <motion.div
-            variants={staggerContainer}
-            initial="initial"
-            animate="animate"
-            className="gap-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3"
-          >
-            <AnimatePresence>
-              {filteredListings.map((listing) => (
-                <ListingCard key={listing.id} listing={listing} />
-              ))}
-            </AnimatePresence>
-          </motion.div>
+          <>
+            <motion.div
+              variants={staggerContainer}
+              initial="initial"
+              animate="animate"
+              className="gap-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3"
+            >
+              <AnimatePresence>
+                {visibleListings.map((listing) => (
+                  <ListingCard key={listing._id || listing.id} listing={listing} />
+                ))}
+              </AnimatePresence>
+            </motion.div>
+            <div
+              ref={loadMoreRef}
+              className="flex justify-center p-6 min-h-[60px]"
+            >
+              {hasNextPage && (
+                <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
+              )}
+            </div>
+          </>
         ) : (
           <motion.div
             initial={{ opacity: 0, scale: 0.95 }}

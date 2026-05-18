@@ -7,6 +7,7 @@ import {
   TrendingUp,
   DollarSign,
   Award,
+  Loader2,
 } from "lucide-react";
 import {
   PageHeader,
@@ -18,11 +19,12 @@ import { formatETB } from "../../utils/format";
 import RequestModal from "../../components/admin/refund-requests/RequestModal";
 import { useAPI } from "../../hook/useApi";
 import {
-  useSuspenseQuery,
+  useSuspenseInfiniteQuery,
   useMutation,
   useQueryClient,
 } from "@tanstack/react-query";
-//TODO: takecare of the cards
+import { useIntersectionObserver } from "../../hook/useIntersectionObserver";
+
 export default function RefundRequests() {
   const [q, setQ] = useState("");
   const [status, setStatus] = useState("All");
@@ -31,12 +33,16 @@ export default function RefundRequests() {
   const [force, setForce] = useState(false);
   const { admin } = useAPI();
   const queryClient = useQueryClient();
-  const { data } = useSuspenseQuery({
+  
+  const { data: refundsData, fetchNextPage, hasNextPage, isFetchingNextPage } = useSuspenseInfiniteQuery({
     queryKey: ["admin-refund-requests"],
-    queryFn: () => admin.getRefundRequests(),
+    queryFn: ({ pageParam = 1 }) => admin.getRefundRequests({ status: status !== "All" ? status.toLowerCase() : "all", page: pageParam, limit: 10 }),
+    getNextPageParam: (lastPage) => lastPage.data?.hasNextPage ? lastPage.data.page + 1 : undefined,
+    initialPageParam: 1,
   });
-  const refundRequests = data?.data?.refundRequests || [];
-  const totalCount = data?.data?.total || 0;
+
+  const refundRequests = refundsData?.pages.flatMap(page => page.data?.refundRequests || []) || [];
+
   const filtered = useMemo(
     () =>
       refundRequests.filter((r) => {
@@ -47,11 +53,15 @@ export default function RefundRequests() {
             .includes(q.toLowerCase())
         )
           return false;
-        if (status !== "All" && r.status !== status.toLowerCase()) return false;
         return true;
       }),
-    [q, status, refundRequests],
+    [q, refundRequests],
   );
+
+  const { loadMoreRef } = useIntersectionObserver({
+    onIntersect: fetchNextPage,
+    enabled: hasNextPage,
+  });
 
   const totalAmount = filtered.reduce((s, r) => s + r.refundAmountBirr, 0);
 
@@ -213,6 +223,18 @@ export default function RefundRequests() {
                   ))}
                 </tbody>
               </table>
+              <div
+                ref={loadMoreRef}
+                className="flex justify-center p-4 min-h-[40px]"
+              >
+                {isFetchingNextPage ? (
+                  <Loader2 className="w-5 h-5 animate-spin text-muted-foreground" />
+                ) : hasNextPage ? (
+                  <span className="text-sm text-muted-foreground">
+                    Scroll for more
+                  </span>
+                ) : null}
+              </div>
             </div>
           )}
         </Card>

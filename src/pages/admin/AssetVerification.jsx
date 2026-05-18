@@ -1,6 +1,6 @@
 import { motion } from "framer-motion";
 import { useMemo, useState } from "react";
-import { Search, Filter, Eye, Sprout, Beef } from "lucide-react";
+import { Search, Filter, Eye, Sprout, Beef, Loader2 } from "lucide-react";
 import {
   PageHeader,
   StatusBadge,
@@ -9,7 +9,8 @@ import {
 } from "../../components/admin/shared";
 import VerificationModal from "../../components/admin/asset-verification/VerificationModal";
 import { useAPI } from "../../hook/useApi";
-import { useSuspenseQuery } from "@tanstack/react-query";
+import { useSuspenseInfiniteQuery } from "@tanstack/react-query";
+import { useIntersectionObserver } from "../../hook/useIntersectionObserver";
 
 export default function AssetVerifications() {
   const [q, setQ] = useState("");
@@ -18,12 +19,14 @@ export default function AssetVerifications() {
   const [active, setActive] = useState(null);
   const [comment, setComment] = useState("");
   const { admin } = useAPI();
-  const { data: { data } = {} } = useSuspenseQuery({
+  const { data: assetsData, fetchNextPage, hasNextPage, isFetchingNextPage } = useSuspenseInfiniteQuery({
     queryKey: ["pending-assets"],
-    queryFn: () => admin.getPendingAssets(),
+    queryFn: ({ pageParam = 1 }) => admin.getAssetQueue({ page: pageParam, limit: 10 }),
+    getNextPageParam: (lastPage) => lastPage.data?.hasNextPage ? lastPage.data.page + 1 : undefined,
+    initialPageParam: 1,
   });
 
-  const assets = data?.assets || [];
+  const assets = assetsData?.pages.flatMap(page => page.data?.items || []) || [];
 
   const filtered = useMemo(
     () =>
@@ -46,6 +49,11 @@ export default function AssetVerifications() {
       }),
     [q, type, region, assets],
   );
+
+  const { loadMoreRef } = useIntersectionObserver({
+    onIntersect: fetchNextPage,
+    enabled: hasNextPage,
+  });
 
   return (
     <>
@@ -192,6 +200,18 @@ export default function AssetVerifications() {
                   ))}
                 </tbody>
               </table>
+              <div
+                ref={loadMoreRef}
+                className="flex justify-center p-4 min-h-[40px]"
+              >
+                {isFetchingNextPage ? (
+                  <Loader2 className="w-5 h-5 animate-spin text-muted-foreground" />
+                ) : hasNextPage ? (
+                  <span className="text-sm text-muted-foreground">
+                    Scroll for more
+                  </span>
+                ) : null}
+              </div>
             </div>
           )}
         </Card>

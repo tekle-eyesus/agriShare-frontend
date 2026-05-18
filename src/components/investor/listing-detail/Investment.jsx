@@ -43,7 +43,7 @@ function Investment({
           <div className="mt-1.5 w-full join">
             <button
               onClick={() => setShares(Math.max(1, shares - 1))}
-              className="join-item btn btn-sm"
+              className="join-item btn btn-sm border"
               aria-label="Decrease"
             >
               <Minus className="w-3 h-3" />
@@ -56,7 +56,7 @@ function Investment({
             />
             <button
               onClick={() => setShares(shares + 1)}
-              className="join-item btn btn-sm"
+              className="join-item btn btn-sm border"
               aria-label="Increase"
             >
               <Plus className="w-3 h-3" />
