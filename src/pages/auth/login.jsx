@@ -47,6 +47,9 @@ export default function Login() {
     <AuthLayout
       title="Welcome back"
       subtitle="Sign in to continue to AgriShare"
+      footer={
+        <Footer />
+      }
     >
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-5" noValidate>
         <FormField
@@ -81,15 +84,7 @@ export default function Login() {
           />
         </FormField>
 
-        <div className="flex justify-between items-center">
-          <label className="gap-2 py-0 cursor-pointer label">
-            <input
-              type="checkbox"
-              className="checkbox checkbox-primary checkbox-sm"
-              {...register("remember")}
-            />
-            <span className="text-sm label-text">Remember me</span>
-          </label>
+        <div className="flex justify-end items-center">
           <Link
             to="/auth/forgot-password"
             className="font-medium text-sm hover:underline no-underline link link-primary"
@@ -114,17 +109,20 @@ export default function Login() {
             )}
           </button>
         </motion.div>
-
-        <p className="opacity-70 text-sm text-center">
-          Don't have an account?{" "}
-          <Link
-            to="/signup"
-            className="font-semibold hover:underline no-underline link link-primary"
-          >
-            Sign up
-          </Link>
-        </p>
       </form>
     </AuthLayout>
   );
+}
+
+function Footer(){
+  return (
+    <div className="flex items-center justify-between">
+          <span>
+            New here?{" "}
+            <Link to="/signup" className="font-semibold text-success no-underline hover:underline">
+              Create an account
+            </Link>
+          </span>
+        </div>
+  )
 }

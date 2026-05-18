@@ -1,42 +1,73 @@
 import { motion } from "framer-motion";
 import { Sprout } from "lucide-react";
 import ThemeToggle from "../ThemeToggle";
+import { Link } from "react-router-dom";
 
-export default function AuthLayout({ title, subtitle, children }) {
+
+export default function AuthLayout({ title, subtitle, children,footer }) {
   return (
-    <div className="relative bg-linear-to-br from-success/10 via-base-100 to-warning/10 w-full min-h-screen overflow-hidden">
-      {/* Decorative blobs */}
-      <div className="-top-32 -left-32 absolute bg-primary/20 blur-3xl rounded-full w-96 h-96 pointer-events-none" />
-      <div className="-right-32 -bottom-32 absolute bg-warning/20 blur-3xl rounded-full w-96 h-96 pointer-events-none" />
+    <div className="relative min-h-screen w-full overflow-hidden bg-[#f5efe4] dark:bg-base-300 text-base-content transition-colors duration-300">
+      <div className="pointer-events-none absolute inset-0 bg-linear-to-br from-[#f7f1e5] via-[#f1e8d3] to-[#ead9b8] dark:from-base-300 dark:via-base-200 dark:to-base-100 transition-colors duration-300" />
+      <div className="pointer-events-none absolute -top-40 -left-40 h-112 w-md rounded-full bg-success/20 blur-3xl" />
+      <div className="pointer-events-none absolute -bottom-40 right-1/3 h-112 w-md rounded-full bg-warning/20 blur-3xl" />
 
-      {/* Theme toggle (top-right) */}
-      <div className="top-4 right-4 z-20 absolute">
+      <div className="absolute right-4 top-4 z-30">
         <ThemeToggle />
       </div>
 
-      <div className="z-10 relative flex justify-center items-center p-4 sm:p-6 min-h-screen">
-        <motion.div
-          initial={{ opacity: 0, y: 16 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, ease: "easeOut" }}
-          className="w-full max-w-2xl"
-        >
-          <div className="flex flex-col items-center mb-6 text-center">
-            <div className="place-items-center grid shadow-glow mb-3 rounded-2xl w-12 h-12 text-primary-content gradient-primary">
-              <Sprout className="w-6 h-6" />
-            </div>
-            <h1 className="font-bold text-2xl sm:text-3xl tracking-tight">
-              {title}
-            </h1>
-            {subtitle && (
-              <p className="opacity-70 mt-1 max-w-md text-sm">{subtitle}</p>
-            )}
-          </div>
+      <div className="relative z-10 mx-auto flex min-h-screen max-w-[1500px] flex-col lg:flex-row lg:items-stretch lg:gap-6 lg:p-6">
+        <div className="flex w-full flex-1 items-center justify-center px-4 py-10 sm:px-6 lg:py-8">
+          <div className="w-full max-w-md">
+            {/* Brand pill */}
+            <Link
+              to="/"
+              className="mb-8 inline-flex items-center gap-2 rounded-full border border-base-content/15 bg-white/60 px-3 py-1.5 backdrop-blur transition-all hover:bg-white/80"
+            >
+              <span className="grid h-6 w-6 place-items-center rounded-full bg-success text-success-content">
+                <Sprout className="h-3.5 w-3.5" />
+              </span>
+              <span className="text-sm font-semibold tracking-tight">AgriShare</span>
+            </Link>
 
-          <div className="bg-base-100/70 shadow-elevated backdrop-blur-xl border border-base-300/60 card">
-            <div className="p-6 sm:p-8 card-body">{children}</div>
+            <motion.div
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.45, ease: "easeOut" }}
+            >
+              <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">
+                {title}
+              </h1>
+              {subtitle && (
+                <p className="mt-2 max-w-sm text-sm text-base-content/70">{subtitle}</p>
+              )}
+
+              <div className="mt-8">{children}</div>
+
+              {footer && (
+                <div className="mt-6 text-sm text-base-content/70">{footer}</div>
+              )}
+            </motion.div>
           </div>
-        </motion.div>
+        </div>
+
+        <div className="relative hidden flex-1 lg:block">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.98 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.6, ease: "easeOut" }}
+            className="relative h-full min-h-[640px] w-full overflow-hidden rounded-4xl shadow-elevated"
+          >
+            <img
+              src="/auth-pic-1.jpg"
+              alt="Ethiopian farmers in a field"
+              className="absolute inset-0 h-full w-full object-cover"
+              width={1024}
+              height={1280}
+            />
+            <div className="absolute inset-0 bg-linear-to-t from-black/40 via-black/0 to-transparent" />
+
+          </motion.div>
+        </div>
       </div>
     </div>
   );
